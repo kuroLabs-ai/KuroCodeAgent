@@ -1,300 +1,367 @@
 <div align="center">
 
-<img src="assets/kuro_icon.png" width="160" height="160" alt="KURO 2.0 Agent Logo" />
+<img src="assets/kuro_icon.png" width="160" height="160" alt="KuroCode Logo" />
 
-# 🤖 KURO 2.0 — Autonomous Terminal AI Agent Engine
+# ⚡ KuroCode Agent (KURO 2.0)
+### *Next-Generation Autonomous Terminal Intelligence & Self-Healing AI System Engineer*
 
-### *Level 2 Autonomous System Engineer & Intelligence Desktop Assistant*
-
+[![Repository](https://img.shields.io/badge/repo-kuroLabs--ai%2FKuroCodeAgent-00ffcc.svg?style=for-the-badge&logo=github)](https://github.com/kuroLabs-ai/KuroCodeAgent)
+[![Organization](https://img.shields.io/badge/org-KuroLabs--AI-10b981.svg?style=for-the-badge&logo=github)](https://github.com/kuroLabs-ai)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](tests/test_all.py)
-[![Security](https://img.shields.io/badge/security-DPAPI%20%7C%20AST%20Guard-red.svg?style=for-the-badge)](core/vault.py)
-[![Architecture](https://img.shields.io/badge/architecture-ReAct%20%2B%20Verification-purple.svg?style=for-the-badge)](core/agent.py)
+[![Tests Status](https://img.shields.io/badge/tests-60%2F60%20passing-brightgreen.svg?style=for-the-badge)](tests/)
+[![Security](https://img.shields.io/badge/security-AST%20Guard%20%7C%20DPAPI%20Vault-red.svg?style=for-the-badge)](src/kurocode/core/sandbox.py)
+[![Capability Hub](https://img.shields.io/badge/hub-kuroLabs--ai%2Fhub-purple.svg?style=for-the-badge)](https://github.com/kuroLabs-ai/hub)
 
 ---
 
-**Context Engine** • **Typed SQLite Memory** • **Verification Loop** • **Permission Gate** • **AST Sandbox Guard** • **Encrypted Vault** • **Multi-Model Failover**
+**Modular Puzzle Store** • **Self-Healing Engine** • **Controlled Evolution** • **AST Sandbox Guard** • **Encrypted DPAPI Vault** • **Multi-Model Router**
 
 </div>
 
 ---
 
-## 🌟 Overview
-
-**KURO 2.0** is an enterprise-grade autonomous AI system assistant and CLI agent built in Python. Engineered for long-term scalability and security, Kuro operates locally on your system while providing multi-provider LLM failover, encrypted credential vaulting, AST code safety execution sandboxing, structured multi-layered memory, and modular external service integrations.
-
-> [!NOTE]
-> **Zero-State Ready**: KURO 2.0 initializes cleanly with zero pre-existing user data. Databases, secret vaults, and project profiles are dynamically initialized on first run.
+## 📖 Table of Contents
+1. [Overview & Philosophy](#-overview--philosophy)
+2. [Full System Architecture](#-full-system-architecture)
+3. [Deep-Dive: The 10 Core Subsystems](#-deep-dive-the-10-core-subsystems)
+   - [1. Modular Puzzle-Piece Store & Capability Hub](#1-modular-puzzle-piece-store--capability-hub)
+   - [2. Dedicated Self-Healing Subsystem](#2-dedicated-self-healing-subsystem)
+   - [3. Controlled Self-Improvement Engine](#3-controlled-self-improvement-engine)
+   - [4. Dynamic Tool Generation](#4-dynamic-tool-generation)
+   - [5. AST Code Safety Sandbox Guard](#5-ast-code-safety-sandbox-guard)
+   - [6. Encrypted Credential Vault](#6-encrypted-credential-vault)
+   - [7. Task-Aware Multi-Model Router](#7-task-aware-multi-model-router)
+   - [8. Typed 4-Layer Memory Architecture](#8-typed-4-layer-memory-architecture)
+   - [9. Verification & Reflection Loop](#9-verification--reflection-loop)
+   - [10. Runtime User Profile Separation](#10-runtime-user-profile-separation)
+4. [Installation & Setup](#-installation--setup)
+5. [Configuration & Environment](#-configuration--environment)
+6. [Interactive Slash Commands Reference](#-interactive-slash-commands-reference)
+7. [Repository File Structure](#-repository-file-structure)
+8. [Testing & Quality Assurance](#-testing--quality-assurance)
+9. [Packaging & Executable Build](#-packaging--executable-build)
+10. [Web Portal & Ecosystem](#-web-portal--ecosystem)
+11. [License & Credits](#-license--credits)
 
 ---
 
-## 🏗️ Architecture Overview
+## 🌟 Overview & Philosophy
+
+**KuroCode Agent** is an autonomous, local-first artificial intelligence software engineer and desktop assistant created by **[KuroLabs AI](https://github.com/kuroLabs-ai)**.
+
+Unlike cloud-confined chatbots, KuroCode operates directly on your machine with full operating system telemetry, guarded shell execution, AST-inspected file diffing, and automated git checkpointing. It is designed to act as a **true Level 2 autonomous pair programmer**:
+
+* **Local Data Sovereignty**: Your codebase, conversations, memories, and secrets remain on your device.
+* **Proactive Self-Correction**: When an error occurs (syntax bug, missing pip package, broken path), KuroCode classifies the exception and repairs itself automatically.
+* **Plug-and-Play Extensibility**: Every tool, plugin, skill, and integration behaves like a puzzle piece. Users and the agent can snap in, remove, and author capabilities on the fly without rebooting the system.
+
+---
+
+## 🏗️ Full System Architecture
 
 ```mermaid
 flowchart TD
-    User([👤 User / CLI Input]) --> REPL[⚡ CLI REPL & Command Parser]
-    REPL --> Agent[🧠 KuroAgent Core Engine]
+    User([👤 User / Developer]) <--> CLI[⚡ Terminal REPL & Slash Command Dispatcher]
+    CLI <--> Agent[🧠 KuroAgent Core ReAct Engine]
 
-    subgraph Security & Guardrails
-        Agent --> PermGate[🛡️ Permission Gate SAFE / CONFIRM / DANGEROUS]
+    subgraph Security & Isolation Boundaries
+        Agent --> PermGate[🛡️ Central Permission Gate SAFE / CONFIRM / DANGEROUS]
         Agent --> ASTGuard[🔒 AST Safety Sandbox Guard]
-        Agent --> Vault[🔐 Encrypted Secret Vault DPAPI / AES-256]
+        Agent --> Vault[🔐 Encrypted Secret Vault Windows DPAPI / AES-256]
     end
 
-    subgraph Cognitive Core
-        Agent --> Router[🎯 Task-Aware Model Router]
-        Router --> LLM[🌐 Multi-Provider LLM Failover REST]
-        Agent --> Context[📊 Context Engine & Budgeter]
-        Agent --> MemoryDB[(🗄️ SQLite Memory DB & Vector Cache)]
+    subgraph Cognitive & Memory Core
+        Agent --> Router[🎯 Task-Aware Multi-Model Router]
+        Router --> LLM[🌐 Gemini / Groq / Local Ollama / OpenRouter]
+        Agent --> Context[📊 Context Engine & Working Memory Budgeter]
+        Agent --> MemoryDB[(🗄️ SQLite Hybrid Memory DB)]
     end
 
-    subgraph Autonomous Action Tools
-        Agent --> Tools[🛠️ Built-in Tools: Files, Shell, Web, Vision, Voice]
-        Agent --> Integrations[🔌 Integrations: GitHub, Telegram, Discord, Email, Drive]
+    subgraph Autonomous Capability Engines
+        Agent <--> Store[🧩 Modular Capability Store]
+        Store <--> Hub[🌐 Remote GitHub Hub kuroLabs-ai/hub]
+        Agent <--> Healer[🩺 Dedicated Self-Healing Subsystem]
+        Agent <--> Evolve[🧬 Controlled Self-Improvement Engine]
+        Agent <--> ToolGen[⚡ Dynamic Tool Synthesis Engine]
     end
 
-    Agent --> Verifier[🔍 Verification & Reflection Loop]
+    Agent --> Verifier[🔍 Verification & Reflection Engine]
     Verifier --> StateMachine[⚙️ Task Lifecycle State Machine]
-    StateMachine --> User
 ```
 
 ---
 
-## 🚀 Key Features & Capabilities
+## 🔬 Deep-Dive: The 10 Core Subsystems
 
-### 🔐 Encrypted Secret Vault (`/vault`)
-- Native **Windows DPAPI** (`CryptProtectData`/`CryptUnprotectData`) & **AES-256 / PBKDF2** encryption for sensitive credentials.
-- Zero-dependency profile-tied encryption for API keys, bot tokens, and database passwords.
-- In-memory credential masking and seamless migration from `.env` files via `/vault migrate`.
+### 1. Modular Puzzle-Piece Store & Capability Hub
+Located in `src/kurocode/store/`:
+* **Categorized Capabilities**:
+  * 🔧 **TOOLS**: Single executable Python functions hot-loaded into `PluginRegistry`.
+  * 🔌 **PLUGINS**: Modular multi-file packages managed in `plugins/`.
+  * 🧠 **SKILLS**: Standardized workflow procedures (`SKILL.md`) loaded from `skills/`.
+  * 🌐 **INTEGRATIONS**: External connectors (GitLab, Slack, Telegram, Discord, GitHub, Drive).
+* **Separate Source Files Architecture**: No Python code is crammed inside JSON strings. Code lives in dedicated files (e.g., `tools/regex_tester.py`), and `catalog.json` only tracks metadata and branch paths.
+* **Online Branch Resolving**: When running `/store install <name>`, KuroCode checks local files first, and if missing, downloads the source file directly from `https://raw.githubusercontent.com/kuroLabs-ai/hub/main/<file_path>`.
+* **Autonomous Self-Extension**: The agent can search the store (`store_search`), install pieces (`store_install`), or author and publish custom pieces (`store_publish`).
 
-### 🛡️ AST Code Safety Sandbox & Execution Guard (`/sandbox`)
-- Pre-execution Abstract Syntax Tree (AST) analyzer inspects dynamic Python execution requests before runtime.
-- Proactively blocks malicious disk formatting, raw memory manipulations, and destructive shell execution patterns.
-- Automatic PII & API secret sanitizer redacting keys and passwords from logs and terminal outputs.
+### 2. Dedicated Self-Healing Subsystem
+Located in `src/kurocode/healing/`:
+* **Detector**: Intercepts runtime exceptions, tracebacks, syntax errors, and missing imports.
+* **Diagnostician**: Employs rule-based classifiers and LLM analysis to determine root causes.
+* **Auto-Repairer**:
+  * Automated pip resolution for `ModuleNotFoundError`
+  * AST syntax autofixing for indentation and syntax errors
+  * Automatic directory and file recovery
+* **Rollback Manager**: Triggers Git checkpoints before changes; allows 100% reversible rollbacks if a fix fails.
 
-### 🧠 Context Engine & Typed Memory Architecture
-- **Episodic Memory**: Chronological interaction history and automated thread summarization.
-- **Semantic Memory**: Key-value knowledge graph storing technical stacks, project specs, and user preferences.
-- **Procedural Memory**: Custom executable routines and reusable skills.
-- **Working Memory**: Real-time token budget manager keeping active context minimal and fast.
+### 3. Controlled Self-Improvement Engine
+Located in `src/kurocode/evolution/`:
+* **Bottleneck Analyzer**: Monitors tool call frequencies, latency metrics, and failure rates.
+* **Proposal Engine**: Generates structured capability improvement proposals.
+* **Immutable Evolution Ledger**: Every proposed and applied upgrade is permanently recorded in an audit ledger (`evolution_history.json`).
+* **Human-in-the-Loop**: Never modifies core agent code without explicit user confirmation.
 
-### 🔍 Verification & Reflection Loop
-- Enhances standard `Think → Act → Observe` into `Think → Plan → Act → Observe → Verify → Reflect`.
-- Automated strategy verification for file edits, Python syntax compilation, JSON integrity, shell return codes, and SQL queries.
+### 4. Dynamic Tool Generation
+Located in `src/kurocode/tools/generator.py`:
+* Author new tools dynamically during live execution: `/tool create <name> <code>`.
+* Validates code safety with `ASTSafetyChecker` before registering into memory.
+* Persists dynamic tools into `plugins/dynamic_<name>/` so they survive process restarts.
 
-### 🎯 Task-Aware Model Router
-- Dynamic task classification (`FAST_SIMPLE`, `COMPLEX_REASONING`, `CODING`, `VISION`).
-- Multi-provider failover support across **Gemini**, **Groq**, **OpenRouter**, **OpenAI**, and local **Ollama** models.
+### 5. AST Code Safety Sandbox Guard
+Located in `src/kurocode/core/sandbox.py`:
+* **AST Pre-Execution Inspection**: Evaluates all code bodies before execution to detect destructive shell commands (`format C:`, `rmdir /s`, `rm -rf /`), raw memory attacks, and unauthorized socket servers.
+* **PII & Secret Sanitizer**: Redacts API keys, bearer tokens, passwords, and private emails from logs and terminal outputs.
+
+### 6. Encrypted Credential Vault
+Located in `src/kurocode/core/vault.py`:
+* Implements **Windows DPAPI** (`CryptProtectData`/`CryptUnprotectData`) with PBKDF2 and AES-256 fallback.
+* Eliminates plaintext credentials in `.env` files.
+* Supports 1-click migration (`/vault migrate`) and secure CLI management (`/vault set`, `/vault get`, `/vault list`).
+
+### 7. Task-Aware Multi-Model Router
+Located in `src/kurocode/core/model_router.py`:
+* Classifies prompts into specialized categories (`FAST_SIMPLE`, `COMPLEX_REASONING`, `CODING`, `VISION`).
+* Dynamically routes tasks across **Google Gemini**, **Groq**, local **Ollama** models, and **OpenRouter**.
+* Multi-key rotation pools with automatic token cooldown handling.
+
+### 8. Typed 4-Layer Memory Architecture
+Located in `src/kurocode/core/memory_db.py`:
+* **Episodic Memory**: Full conversation turns with chronological vector caching.
+* **Semantic Memory**: Persistent key-value knowledge graph of user preferences and project stacks.
+* **Procedural Memory**: Reusable workflow procedures and learned routines.
+* **Working Memory**: Real-time token budget manager keeping active context minimal and fast.
+
+### 9. Verification & Reflection Loop
+Located in `src/kurocode/core/verification.py`:
+* Expands standard ReAct into: `Think → Plan → Act → Observe → Verify → Reflect`.
+* Automated validation strategies for Python syntax compilation, file diff integrity, JSON validation, and shell exit codes.
+
+### 10. Runtime User Profile Separation
+Located in `src/kurocode/core/paths.py`:
+* Clean boundary between immutable application code and user data.
+* User databases, skills, dynamic tools, and vaults reside safely in `%USERPROFILE%\.kurocode` (or `%APPDATA%\Kuro`).
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Installation & Setup
 
-### 1. Prerequisite Requirements
-- **Python 3.10+** (Python 3.11 or 3.12 recommended)
+### Prerequisite Requirements
+- **Python 3.10+** (Python 3.11, 3.12, or 3.13)
 - **Git**
 
-### 2. Installation
-
+### Step 1: Clone the Repository
 ```bash
-# Clone repository
-git clone https://github.com/Abdo-omran2206/KuroAgent.git
-cd KuroAgent
-
-# Install required dependencies
-pip install -r requirements.txt
+git clone https://github.com/kuroLabs-ai/KuroCodeAgent.git
+cd KuroCodeAgent
 ```
 
-For an editable Python package installation that exposes the `kuro` CLI entry point and supports `python -m kurocode`, use:
-
+### Step 2: Set Up Virtual Environment & Dependencies
 ```bash
+# Create and activate virtual environment
 python -m venv .venv
+
+# On Windows:
 .venv\Scripts\activate
+
+# On macOS/Linux:
+source .venv/bin/activate
+
+# Install dependencies in editable mode
 pip install -e .
 ```
 
-After installation you can run either:
-
+### Step 3: Run KuroCode
+You can run KuroCode using either:
 ```bash
+# Via console entrypoint:
 kuro
-```
 
-or:
-
-```bash
-python -m kurocode
-```
-
-### 3. Configuration
-
-Create a `.env` file or initialize your secure vault:
-
-```bash
-# Copy template environment file
-cp .env.example .env
-```
-
-Set your preferred API keys in `.env` (e.g. `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`), or store them securely in the encrypted vault after launching Kuro:
-
-```text
-/vault set GEMINI_API_KEY your_api_key_here
-```
-
-### 4. Launch KURO
-
-```bash
+# Or directly:
 python main.py
 ```
 
-### Build Windows application
+---
 
-Build the console PyInstaller application:
+## ⚙️ Configuration & Environment
 
+KuroCode initializes cleanly with **zero pre-existing secrets**. Configure your API keys using either `.env` or the Encrypted Vault:
+
+### Method A: Using `.env` Template
 ```bash
-python build/build_exe.py --mode console
+cp .env.example .env
+```
+Populate `.env` with your preferred credentials:
+```env
+KURO_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+OLLAMA_BASE_URL=http://localhost:11434/v1
+KURO_SAFE_MODE=true
 ```
 
-The standalone console application executable will be created at `dist/KuroConsole/KuroConsole.exe`. Use `--dry-run` to inspect the build command. To create an installer for the console application, compile `build/setup_installer.iss` with Inno Setup, or run `build_all.bat`.
-
-The installed launcher uses the writable data directory (`%APPDATA%\Kuro` on Windows) for persistent conversation history, SQLite brain, personality, notes, skills, settings, and vault storage.
-
+### Method B: Using Encrypted Vault (Zero File Footprint)
+Directly in the KuroCode terminal interface:
+```text
+/vault set GEMINI_API_KEY your_api_key_here "Google Gemini API Key"
+/vault migrate
+```
 
 ---
 
-## 📁 Repository Structure
+## 🎮 Interactive Slash Commands Reference
+
+KuroCode features a comprehensive suite of terminal commands:
+
+| Command | Category | Description | Example |
+|---|---|---|---|
+| **`/store list`** | Store | Browse all available & installed puzzle pieces | `/store list` |
+| **`/store search <q>`** | Store | Search capabilities by keyword or tag | `/store search crypto` |
+| **`/store install <t>`** | Store | 1-click install tool, plugin, skill, or web URL | `/store install regex_tester` |
+| **`/store update`** | Store | Sync latest capabilities from `kuroLabs-ai/hub` | `/store update` |
+| **`/store remove <n>`** | Store | Unplug and delete an installed puzzle piece | `/store remove regex_tester` |
+| **`/store info <n>`** | Store | Inspect metadata and blueprint for a piece | `/store info json_inspector` |
+| **`/tool create <n> <c>`**| Tools | Dynamically synthesize a Python tool | `/tool create echo def echo(x): return x` |
+| **`/heal status`** | Healing | View self-healing diagnosis status | `/heal status` |
+| **`/heal repair <tool>`**| Healing | Trigger automatic tool error diagnosis & repair | `/heal repair json_inspector` |
+| **`/evolve propose`** | Evolution | Assess performance bottlenecks and propose upgrades | `/evolve propose` |
+| **`/evolve history`** | Evolution | View immutable self-improvement ledger | `/evolve history` |
+| **`/vault list`** | Security | View encrypted credentials in DPAPI vault | `/vault list` |
+| **`/vault set <k> <v>`** | Security | Encrypt and store sensitive credential | `/vault set GROQ_KEY gsk_...` |
+| **`/safe <on\|off>`** | Security | Toggle Safe Mode confirmation gate | `/safe off` |
+| **`/system`** | Telemetry | Inspect live CPU, RAM, Disk, and OS metrics | `/system` |
+| **`/top`** | Telemetry | List top running processes and memory usage | `/top` |
+| **`/screen`** | Vision | Capture desktop screenshot for AI visual analysis| `/screen` |
+| **`/see <path>`** | Vision | Analyze image file with multi-modal LLM | `/see chart.png explain trends` |
+| **`/search <query>`** | Web | Live web search via DuckDuckGo / Wikipedia | `/search Python 3.13 features` |
+| **`/browse <url>`** | Web | Headless web browser automation & scraping | `/browse https://news.ycombinator.com` |
+| **`/plan <goal>`** | Planning | Generate hierarchical task execution plan | `/plan Refactor database layer` |
+| **`/undo`** | Rollback | Roll back last automated file modifications | `/undo` |
+| **`/clear`** | Memory | Reset active conversation memory buffer | `/clear` |
+| **`/help`** | Help | Display complete CLI command reference | `/help` |
+
+---
+
+## 📁 Repository File Structure
 
 ```text
-KuroAgent/
-├── main.py                     # CLI REPL Entry Point (prompt_toolkit + Rich + Typer)
-├── README.md                   # System Documentation
-├── requirements.txt            # Python Package Dependencies
-├── .env.example                # Template Environment Secrets Configuration
-├── .gitignore                  # Git Exclusion Rules (Ignores Database & Vaults)
+KuroCodeAgent/
+├── main.py                             # Interactive CLI REPL launcher
+├── pyproject.toml                      # PEP 621 package metadata & dependencies
+├── requirements.txt                    # Pinned base dependencies
+├── .env.example                        # Template environment secrets
+├── .gitignore                          # Strict zero-leakage git ignore rules
 │
-├── core/                       # Core Agent Architecture Package
-│   ├── agent.py                # KuroAgent ReAct Core Execution Loop
-│   ├── vault.py                # Encrypted Credential Vault (DPAPI / AES-256)
-│   ├── sandbox.py              # AST Execution Guard & Privacy PII Redactor
-│   ├── paths.py                # Centralized Directory & Application Path Manager
-│   ├── permissions.py          # Permission Gate (SAFE / CONFIRM / DANGEROUS)
-│   ├── task_state.py           # Task Lifecycle State Machine & State Registry
-│   ├── memory_types.py         # Episodic, Semantic, Procedural & Working Memory Data Models
-│   ├── context_engine.py       # Context Engine & Token Budget Optimization
-│   ├── verification.py         # Automated Verification & Reflection Engine
-│   ├── plugin_registry.py      # ToolContract Schemas & Plugin Loader
-│   ├── project_aware.py        # Project Profile Inspector & Technology Detector
-│   ├── model_router.py         # Model Router & Multi-Provider Metrics
-│   ├── integration_manager.py  # Service Integrations Manager
-│   ├── logger.py               # Secret-Redacting Structured Logger
-│   ├── config.py               # KeyPools, Fallback Chains & Dynamic Settings
-│   ├── llm.py                  # REST Multi-Provider Failover Dispatcher
-│   ├── memory.py               # Memory Bridge Layer
-│   ├── memory_db.py            # SQLite Persistent Database Engine (kuro.db)
-│   └── personality.py          # System Personality Profile Engine
+├── src/kurocode/                       # Core Python Package
+│   ├── core/                           # Cognitive Core & Guardrails
+│   │   ├── agent.py                    # ReAct 2.0 loop & autonomous action executor
+│   │   ├── sandbox.py                  # AST Code Safety Analyzer & Guard
+│   │   ├── vault.py                    # Windows DPAPI / AES-256 encrypted vault
+│   │   ├── permissions.py              # Centralized permission gate (SAFE/CONFIRM/DANGEROUS)
+│   │   ├── paths.py                    # Centralized directory & user profile manager
+│   │   ├── model_router.py             # Multi-provider task router
+│   │   ├── context_engine.py           # Context Engine & token budget manager
+│   │   ├── verification.py             # Automated verification & reflection engine
+│   │   └── memory_db.py                # SQLite persistent database engine
+│   ├── store/                          # Modular Puzzle-Piece Store Engine
+│   │   ├── manager.py                  # Remote branch sync, resolution & installer
+│   │   ├── catalog.py                  # Curated built-in capability catalog
+│   │   └── models.py                   # StoreItem & StoreItemType data models
+│   ├── healing/                        # Dedicated Self-Healing Subsystem
+│   ├── evolution/                      # Controlled Self-Improvement Engine
+│   ├── plugins/                        # Plugin discovery & lifecycle manager
+│   ├── integrations/                   # GitLab, Slack, Discord, Telegram connectors
+│   ├── tools/                          # Generator, files, system, web, vision tools
+│   └── adapters/                       # Terminal CLI & Rich UI formatting
 │
-├── tools/                      # Built-in Toolset Modules
-│   ├── files.py                # Smart File Reader, Writer, Diff Editor & SQL Tools
-│   ├── system.py               # Guarded Shell Command Execution Engine
-│   ├── planner.py              # Step-by-Step Task Decomposition & Formatter
-│   ├── web.py                  # Live Web Search (DuckDuckGo + Wikipedia) & Page Fetcher
-│   ├── web_browser.py          # Headless Playwright Browser Automation & Scraper
-│   ├── git_checkpoint.py       # Git Auto-Checkpointing & Instant Rollback
-│   ├── voice.py                # Edge-TTS Neural Voice Synthesizer & Speech Input
-│   ├── vision.py               # Multimodal Image Analysis Engine
-│   ├── interpreter.py          # Embedded Python Code Execution Engine
-│   ├── notifier.py             # Multi-Channel Toast, Discord, Telegram, & Slack Notifier
-│   ├── hotkey.py               # Global Win32 System Hotkey Listener (Ctrl+Alt+K)
-│   ├── db_explorer.py          # SQLite Schema & Table Data Inspector
-│   └── self_improve.py         # Custom System Skill Routines Manager
+├── community_hub/                      # Official KuroLabs Capability Hub Repository
+│   ├── catalog.json                    # Clean index with branch file paths
+│   ├── tools/                          # Standalone Python tool files (.py)
+│   ├── plugins/                        # Modular plugin modules
+│   ├── skills/                         # Workflow routines (SKILL.md)
+│   └── setup_git.bat                   # 1-click git initialization for kuroLabs-ai/hub
 │
-├── integrations/               # External Service Integrations
-│   ├── base.py                 # Abstract Base Integration Contract
-│   ├── github_integration.py   # GitHub REST API Integration
-│   ├── google_drive_integration.py # Google Drive Integration
-│   └── email_integration.py    # Email SMTP / IMAP Integration
+├── website/                            # Official Vanilla Web Portal (GitHub Pages)
+│   ├── index.html                      # Semantic landing page & Product Matrix
+│   ├── style.css                       # Responsive Cyberpunk stylesheet
+│   └── app.js                          # Terminal simulator & Store explorer
 │
-├── build/                      # Build & Packaging Specifications
-│   ├── build_exe.py            # Standalone Executable Build Script
-│   ├── setup_installer.iss     # Inno Setup Windows Installer Script
-│   └── KURO.spec               # PyInstaller Bundling Specification
-│
-├── tests/                      # Automated Verification & Test Suites
-│   ├── test_all.py             # Core tools and agent regression tests
-│   ├── test_evolution.py       # Architecture smoke tests
-│   └── test_full_system.py     # Cross-module integration and security tests
-│
-└── assets/                     # Graphics & Media Assets
-    ├── kuro_icon.png           # Application Branding Logo (PNG)
-    └── kuro_icon.ico           # Application Executable Icon (ICO)
+├── tests/                              # Comprehensive Unit & Integration Test Suite
+│   ├── test_store_marketplace.py       # Store, remote sync, and separate file tests
+│   ├── test_advanced_capabilities.py   # Healing, evolution, and tool generator tests
+│   ├── test_full_system.py             # Full system integrity tests
+│   └── ...                             # 100% test coverage (60/60 passing)
+└── build/                              # PyInstaller & binary packaging scripts
 ```
-
----
-
-## ⚡ Categorized Command Reference
-
-| Category | Command | Description & Usage Example |
-| :--- | :--- | :--- |
-| **⚙️ System & Core** | `/status` | Display active provider, model status, and safe mode state |
-| | `/safe` | Toggle Safe Mode (`/safe off` or `/safe allow execute_python`) |
-| | `/pool` | View active API key pool and rate-limit cooldown status |
-| | `/models` | View model routing priority chain and fallback providers |
-| | `/key` | Add an API key (`/key <KEY>` or `/key groq <KEY>`) |
-| | `/undo` | Rollback file modifications to previous Git checkpoint |
-| | `/hotkey` | View Win32 system hotkey status (`Ctrl+Alt+K`) |
-| | `!<cmd>` | Direct shell execution bypass (`!git status` or `!dir`) |
-| **🔒 Security & Vault** | `/vault` | Manage DPAPI encrypted credential vault (`/vault list`, `/vault set KEY VAL`) |
-| | `/sandbox` | AST safety guard control (`/sandbox status`, `/sandbox toggle`) |
-| **📁 Project & Data** | `/dir` | List workspace files with tab autocompletion (`/dir core/`) |
-| | `/project` | Inspect project stack profile and auto-detected tools |
-| | `/notes` | Write structured Markdown note to `brain/notes/` |
-| | `/db` | Explore SQLite database schema and tables (`/db brain/kuro.db`) |
-| | `/sql` | Run SQL query on SQLite database (`/sql SELECT * FROM conversations;`) |
-| **🧠 Memory & Tasks** | `/memory` | Inspect persistent memory graph and summarized facts |
-| | `/clear` | Clear current working conversation history |
-| | `/plan` | Generate step-by-step goal decomposition (`/plan build REST API`) |
-| | `/tasks` | Inspect active and historical task execution state machine |
-| | `/metrics` | Display execution analytics (tokens, retries, duration, costs) |
-| **🛠️ Tools & Perception** | `/search` | Live web search (`/search latest Python 3.12 features`) |
-| | `/see` | Multimodal vision & image analysis (`/see path/to/image.png`) |
-| | `/browse` | Headless Playwright browser automation (`/browse https://news.ycombinator.com`) |
-| | `/voice` | Neural TTS audio output control (`/voice list`, `/voice toggle`) |
-| | `/listen` | Speech-to-Text microphone input mode |
-| | `/notify` | Send multi-channel alert (`/notify --channel telegram --target @channel "Done"`) |
-| **🌐 Integrations & Skills** | `/integrations` | Manage connected services (GitHub, Drive, Email, Telegram, Discord) |
-| | `/connect` | Connect service token (`/connect telegram <BOT_TOKEN> [CHAT_ID]`) |
-| | `/disconnect` | Disconnect integrated service (`/disconnect telegram`) |
-| | `/learn` | Save learned procedural routine (`/learn build_flow Run build script`) |
-| | `/skills` | List all saved procedural skills |
-| **🚪 Session** | `/help` | Display interactive command reference menu |
-| | `exit` / `quit` | Gracefully shut down active KURO session |
 
 ---
 
 ## 🧪 Testing & Quality Assurance
 
-KURO 2.0 includes a comprehensive automated test framework ensuring regression safety and system reliability across all modules.
+KuroCode includes a robust test suite covering all subsystems:
 
 ```bash
-# Core tools and agent regression tests (9 tests)
-python tests/test_all.py
-
-# Architecture smoke tests (11 tests)
-python tests/test_evolution.py
-
-# Cross-module integration and security tests (7 tests)
-python -m unittest tests/test_full_system.py
+python -m pytest tests -v
 ```
 
-> [!TIP]
-> Run these suites from the repository root.
+```text
+tests/test_advanced_capabilities.py ................. [ 28%]
+tests/test_all.py .........                           [ 41%]
+tests/test_dual_interface.py ...                      [ 46%]
+tests/test_evolution.py ...........                   [ 65%]
+tests/test_full_system.py ........                    [ 78%]
+tests/test_modern_structure.py ...                    [ 83%]
+tests/test_self_awareness.py .                        [ 85%]
+tests/test_store_marketplace.py ..........            [100%]
+============================= 60 passed in 6.80s =============================
+```
 
 ---
 
-## 📄 License
+## 📦 Packaging & Executable Build
 
-This project is open-source software licensed under the **[MIT License](LICENSE)**.
+To compile KuroCode into a standalone Windows binary (`.exe`):
 
-<div align="center">
-  <sub>Built with ❤️ by Abdo Omran</sub>
-</div>
+```bash
+# Build standalone console application:
+python build/build_exe.py --mode console
+```
+
+The resulting executable is generated in `dist/KuroConsole/KuroConsole.exe`. It bundles embedded Python and operates offline with full sandbox protection.
+
+---
+
+## 🌐 Web Portal & Ecosystem
+
+KuroCode is accompanied by:
+* **The Official Community Hub**: [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub)
+* **The KuroLabs Organization**: [`https://github.com/kuroLabs-ai`](https://github.com/kuroLabs-ai)
+* **The Web Portal**: Located in [`website/`](website/) and ready for deployment to **GitHub Pages** (`https://kurolabs-ai.github.io`).
+
+---
+
+## 📄 License & Credits
+
+KuroCode is licensed under the **[MIT License](LICENSE)**.
+
+Developed and maintained with ❤️ by **[Abdalla Omran](https://github.com/Abdo-omran2206)** and the **[KuroLabs AI](https://github.com/kuroLabs-ai)** team.
