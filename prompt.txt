@@ -1,0 +1,2193 @@
+# KuroCode — Full Project Generation Prompt
+
+You are an expert Python software architect and AI-agent engineer.
+
+Your task is to create the initial **KuroCode** project from scratch based on the architecture and requirements below.
+
+Do NOT simplify the architecture by turning the project into one or a few large Python files.
+
+Do NOT invent a completely different architecture.
+
+Build the project as a clean, modular, extensible Python application designed to evolve into a powerful autonomous AI computer agent.
+
+---
+
+# 1. PROJECT IDENTITY
+
+Project name:
+
+**KuroCode**
+
+KuroCode is a:
+
+* Local-first autonomous AI agent
+* Personal computer agent
+* AI coding/development agent
+* Tool-driven agent runtime
+* CLI-first application
+* Windows-first application
+* Extensible plugin platform
+
+Primary language:
+
+**Python**
+
+Primary platform:
+
+**Windows**
+
+Primary interface:
+
+**CLI / Console**
+
+Development environment:
+
+**VS Code**
+
+---
+
+# 2. PRODUCT VISION
+
+KuroCode is a personal AI agent that lives on the user's computer.
+
+Instead of being only a chatbot, KuroCode should be able to:
+
+* Understand the user's goals.
+* Understand the computer and current environment.
+* Reason using one or more LLM providers.
+* Execute actions on the PC.
+* Read and modify files.
+* Run CMD, PowerShell, and Python.
+* Work with Git and development projects.
+* Use external APIs and services.
+* Remember relevant information.
+* Install and use tools/plugins.
+* Recover from failures.
+* Diagnose and repair problems.
+* Automate recurring tasks.
+* Improve its capabilities in a controlled way.
+* Maintain an identity and configurable personality.
+* Operate primarily through a CLI.
+
+**Product one-liner:**
+
+> **KuroCode is your personal AI agent living inside your computer.**
+
+**North Star:**
+
+One intelligent CLI agent that understands the user's goal and computer, chooses the right tools, executes work, observes results, recovers from failures, remembers context, integrates with external services, and safely expands its capabilities.
+
+---
+
+# 3. CORE VISION
+
+KuroCode should become a personal AI agent that lives inside the user's computer.
+
+The user should be able to tell KuroCode what they want, and KuroCode should:
+
+1. Understand the goal.
+2. Understand the current environment.
+3. Reason using an LLM.
+4. Create a plan.
+5. Select appropriate tools.
+6. Ask for permission when necessary.
+7. Execute actions.
+8. Observe results.
+9. Evaluate whether the goal was completed.
+10. Recover from failures.
+11. Continue the task.
+12. Remember useful information.
+13. Report the final result.
+
+The fundamental loop is:
+
+```text
+THINK
+  ↓
+PLAN
+  ↓
+ACT
+  ↓
+OBSERVE
+  ↓
+EVALUATE
+  ↓
+ADAPT
+  ↓
+THINK AGAIN
+```
+
+---
+
+# 4. PRODUCT PRINCIPLES
+
+## 4.1 Local First
+
+KuroCode should operate primarily on the user's machine. The local machine is the agent's environment.
+
+## 4.2 Provider Agnostic
+
+KuroCode must not depend on a single LLM provider. Possible providers include:
+
+* Gemini
+* Groq
+* OpenAI
+* Anthropic
+* OpenRouter
+* Ollama
+* Custom providers
+
+The agent should be able to switch between providers.
+
+## 4.3 Tool Driven
+
+The LLM should not directly control the computer. Instead:
+
+```text
+LLM
+ ↓
+Decision
+ ↓
+Tool
+ ↓
+Execution
+ ↓
+Result
+ ↓
+LLM
+```
+
+This makes actions observable, testable, permission-controlled, and replaceable.
+
+## 4.4 Modular
+
+Every major subsystem should have a clear responsibility:
+
+```text
+Brain
+Memory
+Tools
+Security
+Plugins
+Integrations
+Environment
+CLI
+Automation
+```
+
+## 4.5 Extensible
+
+Third-party developers should eventually be able to create tools, plugins, integrations, and providers without modifying the KuroCode core.
+
+## 4.6 Observable
+
+KuroCode should provide visibility into what it is doing, which tool it is using, why an action failed, what it changed, what commands were executed, and what permissions were required.
+
+## 4.7 Recoverable
+
+KuroCode should be designed around failure recovery. Failures should not automatically terminate the entire task.
+
+## 4.8 Controlled Autonomy
+
+KuroCode can be autonomous, but dangerous operations should have permission and approval mechanisms.
+
+---
+
+# 5. IMPORTANT ARCHITECTURAL PRINCIPLE
+
+The LLM is NOT the entire agent.
+
+The architecture must separate:
+
+```text
+Agent
+├── Core
+├── Brain
+├── Memory
+├── Planning
+├── Tools
+├── Environment
+├── Security
+├── Integrations
+├── Plugins
+├── Automation
+└── CLI
+```
+
+The LLM is only the reasoning/brain component.
+
+The LLM must NOT directly execute operating-system commands.
+
+Instead:
+
+```text
+LLM
+ ↓
+Decision / Tool Call
+ ↓
+Tool Registry
+ ↓
+Permission Check
+ ↓
+Tool Execution
+ ↓
+Tool Result
+ ↓
+Agent
+ ↓
+LLM
+```
+
+---
+
+# 6. CORE AGENT MODEL
+
+KuroCode is not just an LLM. The conceptual model is:
+
+```text
+KuroCode Agent
+│
+├── Goal
+├── Brain
+├── Memory
+├── Planning
+├── Tools
+├── Environment
+├── Execution
+├── Observation
+├── Evaluation
+├── Security
+├── Identity
+└── Personality
+```
+
+The LLM is only the reasoning component.
+
+---
+
+# 7. APPLICATION ENTRY POINT
+
+KuroCode must have a clear application entry point.
+
+The Python module entry point must be:
+
+```text
+src/kurocode/__main__.py
+```
+
+It must support:
+
+```powershell
+python -m kurocode
+```
+
+The project must also expose a CLI executable called:
+
+```text
+kuro
+```
+
+through `pyproject.toml`.
+
+Use:
+
+```toml
+[project.scripts]
+kuro = "kurocode.cli.app:run"
+```
+
+Therefore:
+
+```text
+kuro
+ ↓
+kurocode.cli.app.run()
+ ↓
+Application Bootstrap
+ ↓
+KuroCode Runtime
+ ↓
+Agent
+```
+
+Keep `__main__.py` extremely small.
+
+It should delegate to the CLI application instead of containing business logic.
+
+---
+
+# 8. ENTRY POINT ARCHITECTURE
+
+```text
+                 USER
+                  │
+                  ▼
+              kuro CLI
+                  │
+                  ▼
+          __main__ / CLI App
+                  │
+                  ▼
+         Application Bootstrap
+                  │
+       ┌──────────┼──────────┐
+       ▼          ▼          ▼
+    Config      Logging    Security
+       │
+       ├───────────────┐
+       ▼               ▼
+    Brain            Memory
+       │               │
+       └───────┬───────┘
+               ▼
+             Agent
+               │
+       ┌───────┼────────┐
+       ▼       ▼        ▼
+     Tools Environment Integrations
+```
+
+---
+
+# 9. APPLICATION BOOTSTRAP
+
+The CLI itself should not contain the entire application.
+
+A bootstrap layer should initialize the runtime.
+
+Responsibilities include:
+
+1. Load configuration.
+2. Initialize logging.
+3. Initialize security.
+4. Initialize provider manager.
+5. Initialize memory.
+6. Load built-in tools.
+7. Load plugins.
+8. Load integrations.
+9. Detect environment.
+10. Create the agent.
+11. Start the CLI shell.
+
+---
+
+# 10. DEVELOPMENT WORKFLOW
+
+The project must support normal Python development through VS Code.
+
+Development setup:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e .
+```
+
+After that the developer can run:
+
+```powershell
+kuro
+```
+
+or:
+
+```powershell
+python -m kurocode
+```
+
+The project must use editable installation so source code changes are reflected without rebuilding after every change.
+
+---
+
+# 11. PRODUCTION WORKFLOW
+
+Development and production must be separated.
+
+Development:
+
+```text
+Source Code
+ ↓
+Virtual Environment
+ ↓
+pip install -e .
+ ↓
+kuro
+```
+
+Production:
+
+```text
+Source Code
+ ↓
+Packaging
+ ↓
+Windows executable
+ ↓
+Installer
+ ↓
+User PC
+```
+
+The final user should eventually be able to run:
+
+```text
+KuroCode.exe
+```
+
+without needing to understand the internal Python source structure.
+
+---
+
+# 12. REQUIRED REPOSITORY STRUCTURE
+
+Create the project using this exact structure:
+
+```text
+KuroCode/
+│
+├── pyproject.toml
+├── README.md
+├── LICENSE
+├── .gitignore
+├── .env.example
+│
+├── src/
+│   └── kurocode/
+│       │
+│       ├── __init__.py
+│       ├── __main__.py
+│       │
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── agent.py
+│       │   ├── orchestrator.py
+│       │   ├── context.py
+│       │   ├── state.py
+│       │   ├── goals.py
+│       │   ├── planner.py
+│       │   ├── evaluator.py
+│       │   ├── loop.py
+│       │   └── events.py
+│       │
+│       ├── brain/
+│       │   ├── __init__.py
+│       │   ├── base.py
+│       │   ├── manager.py
+│       │   ├── router.py
+│       │   ├── models.py
+│       │   ├── fallback.py
+│       │   │
+│       │   └── providers/
+│       │       ├── __init__.py
+│       │       ├── gemini.py
+│       │       ├── groq.py
+│       │       ├── openai.py
+│       │       ├── anthropic.py
+│       │       └── ollama.py
+│       │
+│       ├── identity/
+│       │   ├── __init__.py
+│       │   ├── identity.py
+│       │   ├── personality.py
+│       │   └── capabilities.py
+│       │
+│       ├── memory/
+│       │   ├── __init__.py
+│       │   ├── manager.py
+│       │   ├── working.py
+│       │   ├── conversation.py
+│       │   ├── user.py
+│       │   ├── project.py
+│       │   ├── knowledge.py
+│       │   ├── tool_memory.py
+│       │   ├── storage.py
+│       │   └── retrieval.py
+│       │
+│       ├── tools/
+│       │   ├── __init__.py
+│       │   ├── base.py
+│       │   ├── registry.py
+│       │   ├── loader.py
+│       │   ├── schema.py
+│       │   ├── permissions.py
+│       │   └── result.py
+│       │
+│       ├── integrations/
+│       │   ├── __init__.py
+│       │   ├── base.py
+│       │   ├── registry.py
+│       │   ├── github/
+│       │   ├── gitlab/
+│       │   ├── google_drive/
+│       │   ├── email/
+│       │   ├── telegram/
+│       │   └── discord/
+│       │
+│       ├── plugins/
+│       │   ├── __init__.py
+│       │   ├── manager.py
+│       │   ├── installer.py
+│       │   ├── loader.py
+│       │   ├── validator.py
+│       │   ├── manifest.py
+│       │   ├── updater.py
+│       │   └── repository.py
+│       │
+│       ├── security/
+│       │   ├── __init__.py
+│       │   ├── permissions.py
+│       │   ├── policies.py
+│       │   ├── approval.py
+│       │   ├── secrets.py
+│       │   ├── sandbox.py
+│       │   └── audit.py
+│       │
+│       ├── healing/
+│       │   ├── __init__.py
+│       │   ├── detector.py
+│       │   ├── diagnostician.py
+│       │   ├── repairer.py
+│       │   ├── retry.py
+│       │   └── rollback.py
+│       │
+│       ├── evolution/
+│       │   ├── __init__.py
+│       │   ├── analyzer.py
+│       │   ├── improver.py
+│       │   ├── generator.py
+│       │   ├── tester.py
+│       │   └── versioning.py
+│       │
+│       ├── automation/
+│       │   ├── __init__.py
+│       │   ├── scheduler.py
+│       │   ├── tasks.py
+│       │   ├── watchers.py
+│       │   └── daemon.py
+│       │
+│       ├── environment/
+│       │   ├── __init__.py
+│       │   ├── detector.py
+│       │   ├── project.py
+│       │   ├── os.py
+│       │   └── workspace.py
+│       │
+│       ├── browser/
+│       │   ├── __init__.py
+│       │   ├── browser.py
+│       │   ├── navigation.py
+│       │   └── interaction.py
+│       │
+│       ├── notifications/
+│       │   ├── __init__.py
+│       │   ├── manager.py
+│       │   ├── windows.py
+│       │   ├── telegram.py
+│       │   └── discord.py
+│       │
+│       ├── cli/
+│       │   ├── __init__.py
+│       │   ├── app.py
+│       │   ├── shell.py
+│       │   ├── commands.py
+│       │   ├── renderer.py
+│       │   ├── prompts.py
+│       │   └── completion.py
+│       │
+│       ├── config/
+│       │   ├── __init__.py
+│       │   ├── manager.py
+│       │   ├── defaults.py
+│       │   └── schema.py
+│       │
+│       ├── logging/
+│       │   ├── __init__.py
+│       │   ├── logger.py
+│       │   ├── events.py
+│       │   └── formatter.py
+│       │
+│       └── utils/
+│           ├── __init__.py
+│           ├── paths.py
+│           ├── subprocess.py
+│           ├── json.py
+│           ├── validation.py
+│           └── platform.py
+│
+├── builtin_tools/
+│   ├── filesystem/
+│   ├── terminal/
+│   ├── git/
+│   └── system/
+│
+├── plugins/
+├── integrations/
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── agent/
+│   ├── tools/
+│   ├── plugins/
+│   ├── integrations/
+│   └── fixtures/
+│
+├── docs/
+│   ├── architecture/
+│   ├── development/
+│   ├── plugins/
+│   ├── integrations/
+│   └── api/
+│
+├── scripts/
+│   ├── build.py
+│   ├── dev.py
+│   └── release.py
+│
+└── data/
+    └── .gitkeep
+```
+
+---
+
+# 13. RUNTIME USER DATA
+
+Do NOT store user runtime data inside the source repository.
+
+Use:
+
+```text
+%USERPROFILE%\.kurocode\
+```
+
+Structure:
+
+```text
+.kurocode/
+│
+├── config/
+│   ├── config.yaml
+│   └── providers.yaml
+│
+├── memory/
+│   ├── user/
+│   ├── projects/
+│   ├── knowledge/
+│   └── conversations/
+│
+├── plugins/
+│   ├── installed/
+│   ├── cache/
+│   └── disabled/
+│
+├── integrations/
+│   └── credentials/
+│
+├── logs/
+├── cache/
+├── sessions/
+├── workspaces/
+└── state/
+```
+
+The repository contains the product.
+
+The `.kurocode` directory contains user-specific runtime state.
+
+---
+
+# 14. CORE PACKAGE
+
+The `core/` package is the heart of KuroCode.
+
+## agent.py
+
+Represents the main KuroCode agent.
+
+Responsibilities:
+
+* Receive goals.
+* Maintain state.
+* Coordinate reasoning.
+* Execute tools.
+* Observe results.
+* Evaluate progress.
+* Finish or continue tasks.
+
+Do NOT place CLI logic here.
+
+---
+
+## orchestrator.py
+
+Coordinates:
+
+* Brain
+* Memory
+* Tools
+* Environment
+* Planner
+* Evaluator
+* Security
+
+It is the central runtime coordinator.
+
+---
+
+## context.py
+
+Builds the context provided to the brain.
+
+Context may include:
+
+* User request.
+* Current directory.
+* Current project.
+* Git state.
+* Relevant files.
+* Memory.
+* Available tools.
+* Environment.
+* Identity.
+* Previous actions.
+
+---
+
+## state.py
+
+Represents the current agent state.
+
+Possible states:
+
+```text
+IDLE
+THINKING
+PLANNING
+EXECUTING
+OBSERVING
+EVALUATING
+WAITING
+FAILED
+COMPLETED
+```
+
+---
+
+## goals.py
+
+Represents:
+
+* User goals.
+* Subgoals.
+* Goal status.
+* Goal completion.
+
+---
+
+## planner.py
+
+Converts goals into executable plans.
+
+---
+
+## evaluator.py
+
+Determines whether the task was successfully completed.
+
+---
+
+## loop.py
+
+Implements:
+
+```text
+Think
+ ↓
+Plan
+ ↓
+Act
+ ↓
+Observe
+ ↓
+Evaluate
+ ↓
+Adapt
+```
+
+---
+
+## events.py
+
+Internal event system for communication between components.
+
+---
+
+# 15. BRAIN PACKAGE
+
+The brain layer must abstract LLM providers.
+
+Architecture:
+
+```text
+Agent
+ ↓
+Brain Manager
+ ↓
+Router
+ ↓
+Provider Adapter
+ ↓
+LLM API
+```
+
+The core must never directly depend on provider-specific SDK implementations.
+
+---
+
+# 16. LLM PROVIDERS
+
+Initial providers:
+
+* Gemini
+* Groq
+* OpenAI
+* Anthropic
+* Ollama
+
+Every provider should implement a common abstraction.
+
+Conceptually:
+
+```text
+LLMProvider
+├── name
+├── models
+├── authenticate
+├── health_check
+├── generate
+├── stream
+└── usage
+```
+
+The architecture must allow adding a new provider without modifying the core agent.
+
+---
+
+# 17. PROVIDER MANAGER
+
+Responsible for:
+
+* Provider registration.
+* API keys.
+* Model configuration.
+* Health checks.
+* Fallback.
+* Provider selection.
+* Rate limits.
+* Errors.
+
+---
+
+# 18. PROVIDER ROUTER
+
+The router may choose providers based on:
+
+* Task.
+* Speed.
+* Cost.
+* Context size.
+* Model capability.
+* Provider availability.
+* User preference.
+
+Example:
+
+```text
+Coding Task
+ ↓
+Preferred Model
+ ↓
+Provider Failure
+ ↓
+Fallback Model
+```
+
+---
+
+# 19. IDENTITY
+
+KuroCode should have a defined identity.
+
+Example:
+
+```text
+Name: KuroCode
+Type: Autonomous AI Agent
+Platform: Windows
+Interface: CLI
+Capabilities: Dynamic
+```
+
+Identity must be independent from the LLM provider.
+
+---
+
+# 20. PERSONALITY
+
+KuroCode should have configurable personality.
+
+Examples:
+
+```text
+technical
+professional
+friendly
+minimal
+verbose
+autonomous
+```
+
+Personality must never override security policies.
+
+---
+
+# 21. MEMORY
+
+Memory types:
+
+```text
+Working Memory
+Conversation Memory
+User Memory
+Project Memory
+Knowledge Memory
+Tool Memory
+```
+
+Memory must support:
+
+* Store.
+* Retrieve.
+* Search.
+* Update.
+* Delete.
+* Export.
+* Clear.
+
+Memory architecture:
+
+```text
+Agent
+ ↓
+Memory Manager
+ ├── Working Memory
+ ├── Conversation Memory
+ ├── User Memory
+ ├── Project Memory
+ ├── Knowledge Memory
+ └── Tool Memory
+       ↓
+    Storage
+       ↓
+   Retrieval
+```
+
+---
+
+# 22. TOOL SYSTEM
+
+A Tool is a single capability.
+
+Examples:
+
+```text
+read_file
+write_file
+search_files
+run_cmd
+run_powershell
+run_python
+git_status
+git_commit
+list_processes
+```
+
+Every tool should expose:
+
+```text
+name
+description
+version
+parameters
+permissions
+validate()
+execute()
+result
+```
+
+---
+
+# 23. TOOL REGISTRY
+
+The registry manages available tools.
+
+Responsibilities:
+
+* Register.
+* Unregister.
+* Discover.
+* Search.
+* Validate.
+* Expose schemas.
+
+Example:
+
+```text
+Tool Registry
+├── filesystem.read
+├── filesystem.write
+├── terminal.cmd
+├── terminal.powershell
+├── terminal.python
+├── git.status
+├── git.commit
+└── system.processes
+```
+
+---
+
+# 24. TOOL RESULT
+
+Every tool should return a structured result.
+
+Conceptually:
+
+```text
+ToolResult
+├── success
+├── output
+├── error
+├── metadata
+├── duration
+└── artifacts
+```
+
+This makes tool execution predictable for the agent.
+
+---
+
+# 25. BUILT-IN TOOLS
+
+Initial built-in capabilities:
+
+### Filesystem
+
+```text
+read
+write
+search
+move
+copy
+delete
+create_directory
+```
+
+### Terminal
+
+```text
+CMD
+PowerShell
+Python
+```
+
+### Git
+
+```text
+status
+diff
+commit
+branch
+checkout
+log
+```
+
+### System
+
+```text
+processes
+hardware
+network
+environment
+```
+
+---
+
+# 26. TOOL / PLUGIN / INTEGRATION DISTINCTION
+
+Do NOT merge these concepts.
+
+## Tool
+
+One capability.
+
+Example:
+
+```text
+read_file
+```
+
+## Plugin
+
+An installable package containing one or more capabilities.
+
+Example:
+
+```text
+YouTube Plugin
+├── search_video
+├── download_video
+└── metadata
+```
+
+## Integration
+
+A connection to an external service.
+
+Example:
+
+```text
+GitHub Integration
+├── Authentication
+├── Repository tools
+├── Issue tools
+├── Pull Request tools
+└── Release tools
+```
+
+---
+
+# 27. PLUGIN SYSTEM
+
+KuroCode must support third-party plugins.
+
+A plugin may contain:
+
+* Tools.
+* Commands.
+* Integrations.
+* Hooks.
+* Configuration.
+* Dependencies.
+
+Example:
+
+```text
+kuro-github-plugin/
+├── kuro_plugin.json
+├── src/
+│   └── github_plugin/
+├── tests/
+├── README.md
+└── pyproject.toml
+```
+
+Plugin manifest:
+
+```json
+{
+  "name": "example-plugin",
+  "version": "1.0.0",
+  "description": "Example KuroCode plugin",
+  "entry": "example_plugin",
+  "permissions": [
+    "filesystem.read"
+  ]
+}
+```
+
+Plugin lifecycle:
+
+```text
+Install
+ ↓
+Validate
+ ↓
+Dependency Check
+ ↓
+Security Check
+ ↓
+Permission Review
+ ↓
+Install
+ ↓
+Register
+ ↓
+Enable
+```
+
+Plugin security: plugins are untrusted code. Installing a plugin must never mean executing arbitrary code without restrictions.
+
+Plugin commands:
+
+```text
+kuro plugin list
+kuro plugin install <plugin>
+kuro plugin remove <plugin>
+kuro plugin enable <plugin>
+kuro plugin disable <plugin>
+kuro plugin update <plugin>
+kuro plugin info <plugin>
+```
+
+---
+
+# 28. INTEGRATIONS
+
+Initial integrations:
+
+```text
+GitHub
+GitLab
+Google Drive
+Email
+Telegram
+Discord
+```
+
+Future integrations may include:
+
+```text
+OneDrive
+Dropbox
+Slack
+Notion
+Trello
+Jira
+Docker
+npm
+PyPI
+Postman
+VS Code
+JetBrains
+```
+
+Also support generic:
+
+```text
+REST
+GraphQL
+Webhooks
+OpenAPI
+Custom APIs
+```
+
+---
+
+# 29. SECURITY
+
+Security is a core subsystem because KuroCode can control the user's PC.
+
+Security must never be treated as an optional feature.
+
+Permission levels:
+
+### Safe
+
+```text
+read file
+list directory
+git status
+inspect environment
+```
+
+### Moderate
+
+```text
+write file
+install package
+create branch
+run tests
+```
+
+### Dangerous
+
+```text
+delete files
+execute unknown code
+modify system settings
+run elevated commands
+destructive Git operations
+```
+
+Dangerous operations should require explicit approval.
+
+---
+
+# 30. SECRETS
+
+Never hard-code credentials.
+
+Credentials may include:
+
+```text
+LLM API keys
+GitHub tokens
+Google credentials
+Email credentials
+Telegram tokens
+Discord tokens
+```
+
+Use secure credential storage.
+
+---
+
+# 31. AUDIT LOG
+
+Record important actions:
+
+```text
+timestamp
+action
+tool
+arguments
+result
+permission level
+approval
+error
+```
+
+---
+
+# 32. ENVIRONMENT AWARENESS
+
+KuroCode should detect:
+
+* Operating system.
+* Current directory.
+* Project type.
+* Git repository.
+* Python version.
+* Node.js version.
+* Installed tools.
+* Virtual environment.
+* Environment variables.
+* Running processes.
+* Network.
+* Hardware.
+
+---
+
+# 33. PROJECT AWARENESS
+
+KuroCode should detect:
+
+```text
+language
+framework
+package manager
+dependencies
+entry point
+tests
+build system
+Git state
+configuration
+```
+
+Support projects such as:
+
+```text
+Python
+React
+Next.js
+Node.js
+PHP
+Java
+C#
+etc.
+```
+
+---
+
+# 34. BROWSER
+
+Future browser capabilities:
+
+```text
+open
+navigate
+click
+type
+read
+extract
+download
+interact
+```
+
+Browser operations must follow the permission system.
+
+---
+
+# 35. SCREEN AWARENESS
+
+Future:
+
+```text
+Screenshot
+ ↓
+Vision Model
+ ↓
+Understand UI
+ ↓
+Decide
+ ↓
+Interact
+```
+
+---
+
+# 36. CLIPBOARD
+
+Support:
+
+```text
+read clipboard
+write clipboard
+monitor clipboard
+```
+
+---
+
+# 37. NOTIFICATIONS
+
+Support:
+
+```text
+Windows notifications
+Telegram
+Discord
+```
+
+Events:
+
+```text
+Task started
+Task completed
+Task failed
+Approval required
+Long task completed
+```
+
+---
+
+# 38. AUTOMATION
+
+Support:
+
+```text
+scheduled tasks
+recurring tasks
+file watchers
+Git watchers
+condition-based tasks
+```
+
+Components:
+
+```text
+Scheduler
+Task Manager
+Watchers
+Daemon
+```
+
+The daemon allows KuroCode to operate even when the interactive CLI is closed.
+
+---
+
+# 39. SELF-HEALING
+
+Architecture:
+
+```text
+Failure
+ ↓
+Detect
+ ↓
+Classify
+ ↓
+Diagnose
+ ↓
+Repair
+ ↓
+Test
+ ↓
+Success?
+ ├── YES → Continue
+ └── NO → Retry / Alternative Repair
+```
+
+Error handling relationship:
+
+```text
+Tool
+ ↓
+Error
+ ↓
+Error Classifier
+ ↓
+Retry?
+ ├── YES → Retry
+ └── NO
+      ↓
+Diagnose
+      ↓
+Repair
+      ↓
+Test
+```
+
+---
+
+# 40. ROLLBACK
+
+Use mechanisms such as:
+
+```text
+Git
+Snapshots
+Backups
+Temporary workspaces
+Transactions
+```
+
+The system must avoid leaving projects in a broken state whenever possible. For development projects, Git should be heavily integrated into recovery.
+
+---
+
+# 41. SELF-IMPROVEMENT
+
+Future controlled self-improvement:
+
+```text
+Detect weakness
+ ↓
+Analyze
+ ↓
+Generate proposal
+ ↓
+Create isolated branch/environment
+ ↓
+Modify
+ ↓
+Test
+ ↓
+Evaluate
+ ↓
+Approval
+ ↓
+Merge
+```
+
+Never allow uncontrolled modification of the production core.
+
+---
+
+# 42. DYNAMIC TOOL CREATION
+
+Future capability:
+
+```text
+User Request
+ ↓
+Generate Tool
+ ↓
+Validate
+ ↓
+Test
+ ↓
+Package
+ ↓
+Register
+```
+
+Generated tools must follow the same permission and validation system as external plugins.
+
+---
+
+# 43. CLI
+
+Primary interface:
+
+```text
+kuro
+```
+
+Interactive mode:
+
+```text
+kuro> hello
+kuro> analyze this project
+kuro> fix the errors
+kuro> run tests
+kuro> commit the changes
+```
+
+Potential commands:
+
+```text
+kuro
+kuro run <task>
+kuro chat
+kuro tools
+kuro tool info <tool>
+kuro plugin list
+kuro plugin install <plugin>
+kuro doctor
+kuro config
+kuro memory
+kuro status
+kuro logs
+kuro daemon
+```
+
+---
+
+# 44. CLI UX
+
+The CLI should support:
+
+* Command history.
+* Autocomplete.
+* Streaming responses.
+* Progress indicators.
+* Tool execution status.
+* Structured output.
+* Errors.
+* Interactive approvals.
+* Colored output.
+
+Example:
+
+```text
+kuro> fix this project
+
+Analyzing project...
+✓ Detected React project
+✓ Checked Git status
+✓ Found 3 errors
+
+Planning repair...
+
+→ Editing src/App.jsx
+→ Running tests
+
+✓ Tests passed
+
+Changes are ready to commit.
+Approve commit? [y/N]
+```
+
+---
+
+# 45. CONFIGURATION
+
+Configuration should live outside source code.
+
+```text
+%USERPROFILE%\.kurocode\config\
+├── config.yaml
+└── providers.yaml
+```
+
+Configuration can include:
+
+```text
+default provider
+default model
+personality
+permissions
+logging
+memory
+tools
+plugins
+automation
+```
+
+---
+
+# 46. LOGGING
+
+Support:
+
+```text
+DEBUG
+INFO
+WARNING
+ERROR
+CRITICAL
+```
+
+Logs should include:
+
+* Agent events.
+* Tool execution.
+* Provider activity.
+* Errors.
+* Audit information.
+
+---
+
+# 47. TESTING
+
+Testing structure:
+
+```text
+tests/
+├── unit/
+├── integration/
+├── agent/
+├── tools/
+├── plugins/
+├── integrations/
+└── fixtures/
+```
+
+Test:
+
+* Core.
+* Agent.
+* Providers.
+* Tools.
+* Plugins.
+* Integrations.
+* Memory.
+* Security.
+* Full workflows.
+
+---
+
+# 48. DEPENDENCY RULES
+
+Maintain strict dependency boundaries.
+
+Recommended direction:
+
+```text
+CLI
+ ↓
+Core
+ ↓
+Brain / Memory / Tools
+ ↓
+Environment / Infrastructure
+```
+
+Rules:
+
+* Tools must NOT import Agent.
+* Brain must NOT execute OS commands directly.
+* CLI must NOT contain core business logic.
+* Providers must NOT depend on CLI.
+* Plugins must use public extension interfaces.
+* Core should orchestrate, not implement every capability.
+* Avoid circular imports.
+
+---
+
+# 49. TOOL EXECUTION ARCHITECTURE
+
+The correct execution model is:
+
+```text
+User Request
+      ↓
+Agent
+      ↓
+Planner
+      ↓
+Tool Selection
+      ↓
+Permission Check
+      ↓
+Tool Execution
+      ↓
+Tool Result
+      ↓
+Observation
+      ↓
+Evaluation
+      ↓
+Next Step
+```
+
+The LLM should propose an action. The tool layer actually performs it.
+
+---
+
+# 50. ERROR HANDLING
+
+Errors should be categorized.
+
+Examples:
+
+```text
+ProviderError
+ToolError
+PermissionError
+ValidationError
+AuthenticationError
+NetworkError
+FileSystemError
+ProcessError
+PluginError
+IntegrationError
+```
+
+The agent should determine whether an error is:
+
+```text
+Retryable
+Recoverable
+Requires approval
+Fatal
+```
+
+---
+
+# 51. INITIAL MVP
+
+Do not implement every future subsystem immediately.
+
+First implementation should focus on:
+
+```text
+CLI
+Core
+Agent
+LLM abstraction
+Gemini
+Groq
+Tool interface
+Tool registry
+Terminal
+Filesystem
+Git
+Configuration
+Logging
+```
+
+Then progressively implement:
+
+```text
+Planner
+Memory
+Context
+Environment
+Permissions
+Project awareness
+Self-healing
+Plugins
+Integrations
+Automation
+Browser
+Screen awareness
+Self-improvement
+```
+
+---
+
+# 52. DEVELOPMENT PHASES
+
+### Phase 0 — Foundation
+
+```text
+CLI
+Core
+Agent
+LLM abstraction
+Gemini
+Groq
+Tool interface
+Tool registry
+Terminal
+Filesystem
+Git
+Configuration
+Logging
+```
+
+### Phase 1 — Intelligent Agent
+
+```text
+Agent loop
+Planner
+Context
+State
+Evaluator
+Memory
+Project awareness
+Environment awareness
+Permissions
+```
+
+### Phase 2 — Autonomous Developer
+
+```text
+Self-healing
+GitHub
+Browser
+Plugin system
+Extension SDK
+Generic API integrations
+Rollback
+```
+
+### Phase 3 — Personal Assistant
+
+```text
+Google Drive
+Email
+Telegram
+Discord
+Scheduler
+Watchers
+Notifications
+Background daemon
+```
+
+### Phase 4 — Advanced Agent
+
+```text
+Screen awareness
+Dynamic tool generation
+Sandbox
+Self-improvement
+Advanced rollback
+Multi-agent architecture
+```
+
+### Phase 5 — Ecosystem
+
+```text
+Kuro Hub
+Plugin marketplace
+Developer publishing
+Reviews
+Version management
+Community ecosystem
+```
+
+---
+
+# 53. MVP SUCCESS CRITERIA
+
+The MVP must allow:
+
+```text
+kuro
+```
+
+Then:
+
+```text
+Analyze this project, fix the errors,
+run the tests and commit the changes.
+```
+
+KuroCode should:
+
+1. Understand the request.
+2. Inspect the environment.
+3. Understand the project.
+4. Create a plan.
+5. Select tools.
+6. Ask for permission when required.
+7. Execute.
+8. Observe results.
+9. Detect errors.
+10. Recover where possible.
+11. Run tests.
+12. Report the result.
+13. Commit changes if authorized.
+
+---
+
+# 54. IMPLEMENTATION RULES FOR THE AI CODING AGENT
+
+When generating the project:
+
+1. Create the directory structure exactly as specified.
+2. Create all required `__init__.py` files.
+3. Create a valid `pyproject.toml`.
+4. Implement the `kuro` CLI entry point.
+5. Implement `src/kurocode/__main__.py`.
+6. Keep `__main__.py` minimal.
+7. Keep CLI logic inside `cli/`.
+8. Keep agent logic inside `core/`.
+9. Keep provider logic inside `brain/`.
+10. Keep tool abstractions inside `tools/`.
+11. Do not put everything into `agent.py`.
+12. Do not create a giant `main.py`.
+13. Do not tightly couple the agent to Gemini, Groq, or any specific provider.
+14. Use interfaces/abstractions where appropriate.
+15. Keep dependencies directional.
+16. Make components independently testable.
+17. Do not implement future features as fake/mock functionality unless explicitly marked as a placeholder.
+18. Do not claim functionality is implemented when it is only a stub.
+19. Document unfinished subsystems clearly.
+20. Prioritize a working MVP over implementing every future feature at once.
+
+---
+
+# 55. FIRST IMPLEMENTATION TARGET
+
+The first working version should achieve:
+
+```text
+python -m kurocode
+```
+
+and:
+
+```text
+kuro
+```
+
+both launch the KuroCode CLI.
+
+The CLI should initialize the application and eventually reach:
+
+```text
+KuroCode>
+```
+
+The agent should be able to receive a basic request and route it through:
+
+```text
+CLI
+ ↓
+Agent
+ ↓
+Brain
+ ↓
+Tool Selection
+ ↓
+Tool Registry
+ ↓
+Tool Execution
+ ↓
+Result
+ ↓
+Agent
+ ↓
+Response
+```
+
+Start with a small number of reliable tools rather than pretending all future capabilities already exist.
+
+---
+
+# 56. ARCHITECTURAL GOAL
+
+The final architecture should evolve toward:
+
+```text
+                         KuroCode
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+               CLI                  Background
+                                    Runtime
+                │                       │
+                └───────────┬───────────┘
+                            │
+                           Core
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+      Brain               Memory             Planning
+        │                   │                   │
+   Providers           Retrieval          Evaluation
+        │
+        └───────────────┬───────────────────────┘
+                        │
+                      Agent
+                        │
+       ┌────────────────┼─────────────────┐
+       │                │                 │
+     Tools        Integrations         Plugins
+       │                │                 │
+       └────────────────┼─────────────────┘
+                        │
+                 Security Layer
+                        │
+                 Environment Layer
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+           Computer            Internet
+              │                   │
+       Files / OS / Git       APIs / Services
+```
+
+---
+
+# 57. FINAL DEFINITION
+
+KuroCode is a local-first autonomous AI agent runtime for Windows.
+
+It combines:
+
+```text
+LLM Reasoning
++
+Computer Control
++
+Persistent Memory
++
+Developer Tools
++
+External Integrations
++
+Plugins
++
+Automation
++
+Self-Healing
++
+Controlled Self-Improvement
++
+CLI
+```
+
+The ultimate goal is to create:
+
+> **A personal AI agent that lives inside the user's computer and can work with the user instead of merely answering the user.**
+
+The fundamental interaction is:
+
+```text
+USER
+ ↓
+GOAL
+ ↓
+KUROCODE
+ ↓
+REASON
+ ↓
+PLAN
+ ↓
+ACT
+ ↓
+OBSERVE
+ ↓
+EVALUATE
+ ↓
+RECOVER / ADAPT
+ ↓
+COMPLETE
+```
+
+Build KuroCode with this architecture as the foundation, while keeping the implementation incremental, testable, secure, modular, and extensible.

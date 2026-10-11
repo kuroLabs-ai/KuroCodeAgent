@@ -1,0 +1,12 @@
+{
+  "name": "tdd_refactoring",
+  "description": "Test-Driven Development refactoring routine (Red -> Green -> Refactor -> Verify).",
+  "version": "1.0.0",
+  "steps": [
+    "1. Run existing test suite to establish green baseline.",
+    "2. Write targeted failing unit test for new behavior or uncovered bug.",
+    "3. Make minimal implementation change to achieve green test status.",
+    "4. Refactor code for readability, type safety, and PEP standards.",
+    "5. Re-run complete test suite to ensure zero regressions."
+  ]
+}

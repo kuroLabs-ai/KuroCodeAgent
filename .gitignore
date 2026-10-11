@@ -1,0 +1,40 @@
+# Environment & Secrets
+.env
+*.env
+*.pem
+*.key
+config/vault.enc
+
+# SQLite Brain DB & User Notes
+brain/*.db
+brain/notes/*
+!brain/notes/.gitkeep
+projects/*.json
+!projects/.gitkeep
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# KURO History & Logs
+.kuro_history
+memory.json
+logs/
+*.log
+
+# PyInstaller Build & Dist Artifacts
+build/KURO/
+build/Output/
+dist/
+!build/KURO.spec
+*.exe
+
+# Scratchpad & Local Assets
+scratch/*
+!scratch/.gitkeep
+evolution_history.json
+store_catalog.json
+.kuro_backups/
+

@@ -1,0 +1,12 @@
+{
+  "name": "git_bisect_flow",
+  "description": "Routine for automated git bisect regression hunt",
+  "version": "1.0.0",
+  "steps": [
+    "git bisect start",
+    "git bisect bad",
+    "git bisect good v1.0",
+    "run test",
+    "git bisect reset"
+  ]
+}
