@@ -1,5 +1,5 @@
-<img src="assets/kuro_icon.png" alt="KURO Logo" width="160" align="center" />
 <div align="center">
+<img src="assets/kuro_icon.png" alt="KURO Logo" width="160" align="center" />
 
 # ⚡ KURO 2.0 (`kurocode`)
 ### *The Autonomous, Local-First AI Terminal Assistant & Operating System Copilot*
