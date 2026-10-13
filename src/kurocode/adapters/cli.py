@@ -854,21 +854,73 @@ class CLIAdapter:
 
         # ── /models ──────────────────────────────────────────────────────────
         elif cmd == "/models":
-            prov = config.get_active_provider()
-            chain = config.MODEL_CHAINS.get(prov, [])
-            self.console.print()
-            table = Table(
-                title=f"Model Fallback Chain: {prov.upper()}",
-                border_style="cyan",
-                box=box.ROUNDED,
-            )
-            table.add_column("Priority", justify="center", style="dim")
-            table.add_column("Model", style="yellow")
-            for i, m in enumerate(chain, 1):
-                badge = "[bold green](active)[/]" if i == 1 else ""
-                table.add_row(str(i), f"{m}  {badge}")
-            self.console.print(table)
-            self.console.print()
+            target_prov = parts[1].lower() if len(parts) > 1 else None
+            active_prov = config.get_active_provider()
+            
+            if target_prov:
+                # Show specific provider's models
+                chain = config.MODEL_CHAINS.get(target_prov, [])
+                if not chain:
+                    self.console.print(f"[bold red]Unknown provider:[/] {target_prov}")
+                    self.console.print(f"[dim]Available providers: {', '.join(config.PROVIDER_CHAIN)}[/]")
+                else:
+                    self.console.print()
+                    table = Table(
+                        title=f"Models for {target_prov.upper()}",
+                        border_style="cyan",
+                        box=box.ROUNDED,
+                    )
+                    table.add_column("Priority", justify="center", style="dim")
+                    table.add_column("Model", style="yellow")
+                    for i, m in enumerate(chain, 1):
+                        is_active = (target_prov == active_prov and i == 1)
+                        badge = "[bold green](active)[/]" if is_active else ""
+                        table.add_row(str(i), f"{m}  {badge}")
+                    self.console.print(table)
+                    self.console.print()
+            else:
+                # Show active provider chain + all registered providers overview
+                chain = config.MODEL_CHAINS.get(active_prov, [])
+                self.console.print()
+                table = Table(
+                    title=f"Active Provider: [bold green]{active_prov.upper()}[/] (Fallback Chain)",
+                    border_style="cyan",
+                    box=box.ROUNDED,
+                )
+                table.add_column("Priority", justify="center", style="dim")
+                table.add_column("Model", style="yellow")
+                for i, m in enumerate(chain, 1):
+                    badge = "[bold green](active)[/]" if i == 1 else ""
+                    table.add_row(str(i), f"{m}  {badge}")
+                self.console.print(table)
+
+                # Summary of all 9 providers
+                summary_table = Table(
+                    title="All Registered Providers (from models.json)",
+                    border_style="dim cyan",
+                    box=box.SIMPLE,
+                )
+                summary_table.add_column("Provider", style="bold")
+                summary_table.add_column("Default Model", style="yellow")
+                summary_table.add_column("Total Models", justify="center", style="dim")
+                summary_table.add_column("Status", justify="center")
+
+                available_set = set(config.get_available_providers())
+                for prov in config.PROVIDER_CHAIN:
+                    models = config.MODEL_CHAINS.get(prov, [])
+                    is_active = (prov == active_prov)
+                    has_key = (prov in available_set)
+                    status = "[bold green]ACTIVE[/]" if is_active else ("[green]READY[/]" if has_key else "[dim red]NO KEY[/]")
+                    summary_table.add_row(
+                        prov.upper(),
+                        models[0] if models else "N/A",
+                        str(len(models)),
+                        status
+                    )
+                self.console.print(summary_table)
+                self.console.print("[dim]Tip: Switch active provider by setting KURO_PROVIDER=<name> in .env or your environment.[/]")
+                self.console.print("[dim]     View a specific provider: /models <gemini|groq|openrouter|mistral|cloudflare|openai|anthropic|deepseek|xai>[/]\n")
+
 
         # ── /undo ────────────────────────────────────────────────────────────
         elif cmd == "/undo":
