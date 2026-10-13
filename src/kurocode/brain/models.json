@@ -1,0 +1,162 @@
+{
+  "version": "2.0.0",
+  "description": "KURO model registry — central catalog of all supported LLM providers and their models.",
+  "default_provider": "gemini",
+  "providers": {
+    "gemini": {
+      "display_name": "Google Gemini",
+      "api_key_env": "GEMINI_API_KEY",
+      "api_keys_env": "GEMINI_API_KEYS",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "auth_type": "query_param",
+      "free_tier": true,
+      "models": [
+        "gemini-3.6-flash",
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-flash-latest",
+        "gemini-2.5-pro",
+        "gemini-2.5-flash"
+      ],
+      "default_model": "gemini-3.6-flash",
+      "features": ["vision", "function_calling", "streaming"]
+    },
+    "groq": {
+      "display_name": "Groq",
+      "api_key_env": "GROQ_API_KEY",
+      "api_keys_env": "GROQ_API_KEYS",
+      "base_url": "https://api.groq.com/openai/v1",
+      "auth_type": "bearer",
+      "free_tier": true,
+      "models": [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it",
+        "deepseek-r1-distill-llama-70b"
+      ],
+      "default_model": "llama-3.3-70b-versatile",
+      "features": ["streaming", "function_calling"]
+    },
+    "openrouter": {
+      "display_name": "OpenRouter",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "api_keys_env": "OPENROUTER_API_KEYS",
+      "base_url": "https://openrouter.ai/api/v1",
+      "auth_type": "bearer",
+      "free_tier": true,
+      "models": [
+        "google/gemini-2.0-flash-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-chat:free",
+        "qwen/qwen-2.5-coder-32b-instruct:free",
+        "anthropic/claude-opus-4-5",
+        "openai/gpt-4o"
+      ],
+      "default_model": "google/gemini-2.0-flash-exp:free",
+      "features": ["streaming", "vision", "unified_gateway"]
+    },
+    "mistral": {
+      "display_name": "Mistral AI",
+      "api_key_env": "MISTRAL_API_KEY",
+      "api_keys_env": "MISTRAL_API_KEYS",
+      "base_url": "https://api.mistral.ai/v1",
+      "auth_type": "bearer",
+      "free_tier": false,
+      "models": [
+        "mistral-large-latest",
+        "mistral-medium-latest",
+        "mistral-small-latest",
+        "codestral-latest",
+        "open-mixtral-8x7b",
+        "open-mistral-nemo"
+      ],
+      "default_model": "mistral-large-latest",
+      "features": ["streaming", "function_calling", "code"]
+    },
+    "cloudflare": {
+      "display_name": "Cloudflare Workers AI",
+      "api_key_env": "CLOUDFLARE_API_TOKEN",
+      "api_keys_env": "CLOUDFLARE_API_TOKENS",
+      "account_id_env": "CLOUDFLARE_ACCOUNT_ID",
+      "base_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run",
+      "auth_type": "bearer",
+      "free_tier": true,
+      "models": [
+        "@cf/meta/llama-3.1-70b-instruct",
+        "@cf/meta/llama-3.1-8b-instruct",
+        "@cf/mistral/mistral-7b-instruct-v0.1",
+        "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+        "@cf/qwen/qwen1.5-14b-chat-awq"
+      ],
+      "default_model": "@cf/meta/llama-3.1-70b-instruct",
+      "features": ["edge_inference", "free_tier"]
+    },
+    "openai": {
+      "display_name": "OpenAI",
+      "api_key_env": "OPENAI_API_KEY",
+      "api_keys_env": "OPENAI_API_KEYS",
+      "base_url": "https://api.openai.com/v1",
+      "auth_type": "bearer",
+      "free_tier": false,
+      "models": [
+        "gpt-4o",
+        "gpt-4o-mini",
+        "gpt-4-turbo",
+        "o1-preview",
+        "o1-mini"
+      ],
+      "default_model": "gpt-4o-mini",
+      "features": ["streaming", "vision", "function_calling", "assistants"]
+    },
+    "anthropic": {
+      "display_name": "Anthropic",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "api_keys_env": "ANTHROPIC_API_KEYS",
+      "base_url": "https://api.anthropic.com/v1",
+      "auth_type": "x-api-key",
+      "api_version_header": "anthropic-version",
+      "api_version": "2023-06-01",
+      "free_tier": false,
+      "models": [
+        "claude-opus-4-5",
+        "claude-sonnet-4-5",
+        "claude-3-5-haiku-20241022",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-opus-20240229"
+      ],
+      "default_model": "claude-sonnet-4-5",
+      "features": ["streaming", "vision", "function_calling", "extended_context"]
+    },
+    "deepseek": {
+      "display_name": "DeepSeek",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "api_keys_env": "DEEPSEEK_API_KEYS",
+      "base_url": "https://api.deepseek.com/v1",
+      "auth_type": "bearer",
+      "free_tier": false,
+      "models": [
+        "deepseek-chat",
+        "deepseek-coder",
+        "deepseek-reasoner"
+      ],
+      "default_model": "deepseek-chat",
+      "features": ["streaming", "function_calling", "code", "reasoning"]
+    },
+    "xai": {
+      "display_name": "xAI (Grok)",
+      "api_key_env": "XAI_API_KEY",
+      "api_keys_env": "XAI_API_KEYS",
+      "base_url": "https://api.x.ai/v1",
+      "auth_type": "bearer",
+      "free_tier": false,
+      "models": [
+        "grok-2-1212",
+        "grok-2-vision-1212",
+        "grok-beta"
+      ],
+      "default_model": "grok-2-1212",
+      "features": ["streaming", "vision", "real_time_data"]
+    }
+  }
+}

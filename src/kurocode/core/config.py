@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from pathlib import Path
@@ -26,45 +27,68 @@ SAFE_MODE = os.getenv("KURO_SAFE_MODE", "true").lower() in ("true", "1", "yes")
 AUTO_GIT_CHECKPOINTS = os.getenv("KURO_GIT_CHECKPOINTS", "true").lower() in ("true", "1", "yes")
 MAX_MEMORY_ITEMS = int(os.getenv("KURO_MAX_MEMORY", "25"))
 
-# Provider Priority Chain (in order of preference)
-PROVIDER_CHAIN = ["gemini", "groq", "openrouter", "openai", "ollama"]
+def _load_models_json() -> Dict[str, Any]:
+    """Loads the central models.json registry from brain/."""
+    try:
+        # Locate models.json relative to this file: ../../brain/models.json
+        models_json_path = Path(__file__).parent.parent / "brain" / "models.json"
+        if models_json_path.exists():
+            return json.loads(models_json_path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
 
-# Model Chains per Provider (fallback sequence)
-MODEL_CHAINS = {
-    "gemini": [
-        "gemini-3.6-flash",
-        "gemini-3.5-flash",
-        "gemini-3.5-flash-lite",
-        "gemini-flash-latest"
-    ],
-    "groq": [
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
-        "mixtral-8x7b-32768",
-        "gemma2-9b-it"
-    ],
-    "openrouter": [
-        "google/gemini-2.0-flash-exp:free",
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "deepseek/deepseek-chat:free",
-        "qwen/qwen-2.5-coder-32b-instruct:free"
-    ],
-    "openai": [
-        "gpt-4o-mini",
-        "gpt-4o"
-    ],
-    "ollama": [
-        "llama3",
-        "qwen2.5-coder",
-        "mistral",
-        "deepseek-coder"
-    ]
-}
+
+# Load the central model registry
+_MODELS_REGISTRY: Dict[str, Any] = _load_models_json()
+
+# Provider Priority Chain (in order of preference)
+# Order: Gemini → Groq → OpenRouter → Mistral → OpenAI → Anthropic → DeepSeek → xAI → Cloudflare
+PROVIDER_CHAIN: List[str] = [
+    "gemini", "groq", "openrouter", "mistral", "openai",
+    "anthropic", "deepseek", "xai", "cloudflare", "ollama"
+]
+
+# Model Chains per Provider (fallback sequence) — loaded from models.json with hardcoded fallback
+def _build_model_chains() -> Dict[str, List[str]]:
+    chains = {}
+    for prov in PROVIDER_CHAIN:
+        registry_entry = _MODELS_REGISTRY.get("providers", {}).get(prov, {})
+        if registry_entry.get("models"):
+            chains[prov] = registry_entry["models"]
+    # Hardcoded fallbacks in case models.json is missing or corrupt
+    fallbacks = {
+        "gemini": ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"],
+        "groq": ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"],
+        "openrouter": ["google/gemini-2.0-flash-exp:free", "meta-llama/llama-3.3-70b-instruct:free",
+                       "deepseek/deepseek-chat:free", "qwen/qwen-2.5-coder-32b-instruct:free"],
+        "mistral": ["mistral-large-latest", "mistral-medium-latest", "mistral-small-latest",
+                    "codestral-latest", "open-mixtral-8x7b"],
+        "openai": ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo"],
+        "anthropic": ["claude-sonnet-4-5", "claude-opus-4-5", "claude-3-5-haiku-20241022"],
+        "deepseek": ["deepseek-chat", "deepseek-coder", "deepseek-reasoner"],
+        "xai": ["grok-2-1212", "grok-2-vision-1212", "grok-beta"],
+        "cloudflare": ["@cf/meta/llama-3.1-70b-instruct", "@cf/meta/llama-3.1-8b-instruct",
+                       "@cf/mistral/mistral-7b-instruct-v0.1"],
+    }
+    for prov, models in fallbacks.items():
+        if prov not in chains:
+            chains[prov] = models
+    return chains
+
+
+MODEL_CHAINS: Dict[str, List[str]] = _build_model_chains()
 
 # Base URLs
 OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+MISTRAL_BASE_URL = os.getenv("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
+ANTHROPIC_BASE_URL = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com/v1")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+XAI_BASE_URL = os.getenv("XAI_BASE_URL", "https://api.x.ai/v1")
+CLOUDFLARE_BASE_URL = os.getenv("CLOUDFLARE_BASE_URL", "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run")
+CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
 
 
 def _is_valid_key(key: str) -> bool:
@@ -145,12 +169,17 @@ class KeyPool:
         self.cooldowns[key] = time.time() + 86400
 
 
-# Initialize Key Pools
+# Initialize Key Pools for all supported providers
 KEY_POOLS: Dict[str, KeyPool] = {
     "gemini": KeyPool("gemini", _parse_keys_from_env("GEMINI_API_KEYS", "GEMINI_API_KEY")),
     "groq": KeyPool("groq", _parse_keys_from_env("GROQ_API_KEYS", "GROQ_API_KEY")),
     "openrouter": KeyPool("openrouter", _parse_keys_from_env("OPENROUTER_API_KEYS", "OPENROUTER_API_KEY")),
+    "mistral": KeyPool("mistral", _parse_keys_from_env("MISTRAL_API_KEYS", "MISTRAL_API_KEY")),
     "openai": KeyPool("openai", _parse_keys_from_env("OPENAI_API_KEYS", "OPENAI_API_KEY")),
+    "anthropic": KeyPool("anthropic", _parse_keys_from_env("ANTHROPIC_API_KEYS", "ANTHROPIC_API_KEY")),
+    "deepseek": KeyPool("deepseek", _parse_keys_from_env("DEEPSEEK_API_KEYS", "DEEPSEEK_API_KEY")),
+    "xai": KeyPool("xai", _parse_keys_from_env("XAI_API_KEYS", "XAI_API_KEY")),
+    "cloudflare": KeyPool("cloudflare", _parse_keys_from_env("CLOUDFLARE_API_TOKENS", "CLOUDFLARE_API_TOKEN")),
 }
 
 

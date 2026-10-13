@@ -1,7 +1,9 @@
+import os
+from typing import Dict, List, Optional, Tuple
 import requests
-from typing import Tuple
 
 from kurocode.core import config
+from kurocode.brain.models import get_provider_spec
 
 
 def ask_llm(
@@ -68,7 +70,6 @@ def ask_llm(
                 if status_code == 429:
                     if pool and api_key:
                         pool.mark_rate_limited(api_key, cooldown_seconds=60.0)
-                    # Try next model or next key in pool
                     continue
 
                 # Handle Temporary Server Unavailable (503, 502, 504, 500) -> Try next model immediately
@@ -96,6 +97,18 @@ def ask_llm(
     return last_error
 
 
+def _normalize_messages(system_prompt: str, prompt: str, history: Optional[list] = None) -> List[Dict[str, str]]:
+    """Helper to convert conversation history into standard chat messages."""
+    messages = [{"role": "system", "content": system_prompt}]
+    if history:
+        for item in history:
+            raw_role = item.get("role", "user")
+            norm_role = "assistant" if raw_role in ("model", "assistant", "ai") else ("system" if raw_role == "system" else "user")
+            messages.append({"role": norm_role, "content": item.get("content", "")})
+    messages.append({"role": "user", "content": prompt})
+    return messages
+
+
 def _dispatch_request(
     provider: str,
     model: str,
@@ -105,45 +118,39 @@ def _dispatch_request(
     history: list = None,
     image_info: dict = None
 ) -> Tuple[bool, str, int]:
-    """Dispatches request to appropriate provider API backend."""
-    if provider == "gemini":
+    """
+    Dispatches request dynamically using metadata from models.json registry
+    or specialized protocol handlers.
+    """
+    prov_lower = provider.lower()
+
+    if prov_lower == "gemini":
         return _call_gemini_api(prompt, system_prompt, model, api_key, history, image_info)
-    elif provider == "groq":
+    elif prov_lower == "anthropic":
+        return _call_anthropic_api(prompt, system_prompt, model, api_key, history, image_info)
+    elif prov_lower == "cloudflare":
+        return _call_cloudflare_api(prompt, system_prompt, model, api_key, history)
+    elif prov_lower == "ollama":
+        url = f"{config.OLLAMA_BASE_URL.rstrip('/')}/chat/completions"
+        return _call_openai_compatible(url=url, api_key="ollama", model=model, prompt=prompt, system_prompt=system_prompt, history=history)
+
+    # All OpenAI-compatible providers: driven directly by models.json registry
+    spec = get_provider_spec(prov_lower)
+    if spec:
+        base_url = spec.get("base_url", "")
+        # Allow environment variable override for base URL (e.g. OPENROUTER_BASE_URL, OPENAI_BASE_URL)
+        env_base = os.getenv(f"{prov_lower.upper()}_BASE_URL")
+        endpoint_base = env_base or base_url
+        url = f"{endpoint_base.rstrip('/')}/chat/completions"
         return _call_openai_compatible(
-            url="https://api.groq.com/openai/v1/chat/completions",
+            url=url,
             api_key=api_key,
             model=model,
             prompt=prompt,
             system_prompt=system_prompt,
             history=history
         )
-    elif provider == "openrouter":
-        return _call_openai_compatible(
-            url=f"{config.OPENROUTER_BASE_URL.rstrip('/')}/chat/completions",
-            api_key=api_key,
-            model=model,
-            prompt=prompt,
-            system_prompt=system_prompt,
-            history=history
-        )
-    elif provider == "ollama":
-        return _call_openai_compatible(
-            url=f"{config.OLLAMA_BASE_URL.rstrip('/')}/chat/completions",
-            api_key="ollama",
-            model=model,
-            prompt=prompt,
-            system_prompt=system_prompt,
-            history=history
-        )
-    elif provider == "openai":
-        return _call_openai_compatible(
-            url=f"{config.OPENAI_BASE_URL.rstrip('/')}/chat/completions",
-            api_key=api_key,
-            model=model,
-            prompt=prompt,
-            system_prompt=system_prompt,
-            history=history
-        )
+
     return False, f"Unknown provider '{provider}'", 400
 
 
@@ -159,7 +166,9 @@ def _call_gemini_api(
     if not api_key:
         return False, "GEMINI_API_KEY is missing", 401
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    spec = get_provider_spec("gemini") or {}
+    base_url = spec.get("base_url", "https://generativelanguage.googleapis.com/v1beta")
+    url = f"{base_url.rstrip('/')}/models/{model}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
 
     contents = []
@@ -214,26 +223,12 @@ def _call_openai_compatible(
     system_prompt: str,
     history: list = None
 ) -> Tuple[bool, str, int]:
-    """Generic OpenAI-compatible API caller for Groq, OpenRouter, Ollama, OpenAI."""
-    headers = {
-        "Content-Type": "application/json"
-    }
+    """Generic OpenAI-compatible API caller for Groq, OpenRouter, Mistral, OpenAI, DeepSeek, xAI, Ollama."""
+    headers = {"Content-Type": "application/json"}
     if api_key and api_key != "ollama":
         headers["Authorization"] = f"Bearer {api_key}"
 
-    messages = [{"role": "system", "content": system_prompt}]
-    if history:
-        for item in history:
-            raw_role = item.get("role", "user")
-            if raw_role in ("model", "assistant", "ai"):
-                norm_role = "assistant"
-            elif raw_role in ("system",):
-                norm_role = "system"
-            else:
-                norm_role = "user"
-            messages.append({"role": norm_role, "content": item.get("content", "")})
-    messages.append({"role": "user", "content": prompt})
-
+    messages = _normalize_messages(system_prompt, prompt, history)
     payload = {
         "model": model,
         "messages": messages,
@@ -252,3 +247,111 @@ def _call_openai_compatible(
             return False, f"[API Error {res.status_code}] {res.text}", res.status_code
     except Exception as e:
         return False, f"[Connection Error] API unreachable ({url}): {str(e)}", 503
+
+
+def _call_anthropic_api(
+    prompt: str,
+    system_prompt: str,
+    model: str,
+    api_key: str,
+    history: list = None,
+    image_info: dict = None
+) -> Tuple[bool, str, int]:
+    """Native REST call to Anthropic Messages API."""
+    if not api_key:
+        return False, "ANTHROPIC_API_KEY is missing", 401
+
+    spec = get_provider_spec("anthropic") or {}
+    base_url = os.getenv("ANTHROPIC_BASE_URL", spec.get("base_url", "https://api.anthropic.com/v1"))
+    version = spec.get("api_version", "2023-06-01")
+
+    url = f"{base_url.rstrip('/')}/messages"
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": version,
+        "content-type": "application/json"
+    }
+
+    messages = []
+    if history:
+        for item in history:
+            raw_role = item.get("role", "user")
+            norm_role = "assistant" if raw_role in ("model", "assistant", "ai") else "user"
+            messages.append({"role": norm_role, "content": item.get("content", "")})
+
+    user_content = []
+    if image_info and image_info.get("b64_data"):
+        user_content.append({
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": image_info.get("mime_type", "image/png"),
+                "data": image_info.get("b64_data")
+            }
+        })
+    user_content.append({"type": "text", "text": prompt})
+    messages.append({"role": "user", "content": user_content if len(user_content) > 1 else prompt})
+
+    payload = {
+        "model": model,
+        "max_tokens": 4096,
+        "system": system_prompt,
+        "messages": messages,
+        "temperature": 0.2
+    }
+
+    try:
+        res = requests.post(url, headers=headers, json=payload, timeout=60)
+        if res.status_code == 200:
+            data = res.json()
+            content_blocks = data.get("content", [])
+            for block in content_blocks:
+                if block.get("type") == "text":
+                    return True, block.get("text", ""), 200
+            return True, "[KURO] Received empty response from Anthropic.", 200
+        else:
+            return False, f"[Anthropic {res.status_code}] {res.text}", res.status_code
+    except Exception as e:
+        return False, f"[Connection Error] Anthropic API unreachable: {str(e)}", 503
+
+
+def _call_cloudflare_api(
+    prompt: str,
+    system_prompt: str,
+    model: str,
+    api_key: str,
+    history: list = None
+) -> Tuple[bool, str, int]:
+    """Direct REST call to Cloudflare Workers AI endpoint."""
+    account_id = config.CLOUDFLARE_ACCOUNT_ID
+    if not account_id:
+        return False, "CLOUDFLARE_ACCOUNT_ID is required to use Cloudflare Workers AI", 400
+    if not api_key:
+        return False, "CLOUDFLARE_API_TOKEN is missing", 401
+
+    spec = get_provider_spec("cloudflare") or {}
+    template_url = spec.get("base_url", "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run")
+    base_url = template_url.replace("{account_id}", account_id)
+    url = f"{base_url.rstrip('/')}/{model}"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    # Normalize messages using common helper
+    messages = _normalize_messages(system_prompt, prompt, history)
+    payload = {"messages": messages}
+
+    try:
+        res = requests.post(url, headers=headers, json=payload, timeout=60)
+        if res.status_code == 200:
+            data = res.json()
+            result = data.get("result", {})
+            response_text = result.get("response", "")
+            if response_text:
+                return True, response_text, 200
+            return True, "[KURO] Received empty response from Cloudflare Workers AI.", 200
+        else:
+            return False, f"[Cloudflare {res.status_code}] {res.text}", res.status_code
+    except Exception as e:
+        return False, f"[Connection Error] Cloudflare API unreachable: {str(e)}", 503
