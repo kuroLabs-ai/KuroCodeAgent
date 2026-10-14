@@ -109,7 +109,7 @@ if result.get("healed"):
 
 ---
 
-## 6. Puzzle Store & Capability Manager
+## 6. KuroHub & Capability Manager
 
 ### `kurocode.store.store_manager`
 Unified manager for Tools, Plugins, Skills, and Integrations connected to the community hub ([`kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub)).
@@ -117,12 +117,15 @@ Unified manager for Tools, Plugins, Skills, and Integrations connected to the co
 ```python
 from kurocode.store import store_manager
 
-# Synchronize local catalog with online GitHub Hub (kuroLabs-ai/hub)
+# Synchronize local capabilities with online GitHub Hub (kuroLabs-ai/hub)
 sync_result = store_manager.update_from_remote()
-print(f"Catalog synced: {sync_result.get('success')}")
+print(f"KuroHub synced: {sync_result.get('success')}")
 
-# Search catalog (local built-in + community synced)
+# Search KuroHub (local built-ins + community synced)
 items = store_manager.search("json")
+
+# List capabilities by type
+tool_items = store_manager.list_kurohub("tool")
 
 # Install a capability on-demand
 install_result = store_manager.install("json_inspector")
@@ -137,5 +140,27 @@ store_manager.publish(
     description="Custom utility tool",
     payload={"code": "def run(): return {'success': True}", "entrypoint": "run"}
 )
+```
+
+---
+
+## 7. Brain Capability JSON Registries
+
+### `kurocode.brain.kuro_hub`
+Provides fast programmatic inspection of installed capabilities stored in `src/kurocode/brain/*.json`.
+
+```python
+from kurocode.brain.kuro_hub import (
+    get_tools_kurohub,
+    get_plugins_kurohub,
+    get_skills_kurohub,
+    get_integrations_kurohub,
+)
+
+# Inspect active capability registries
+tools = get_tools_kurohub()             # from brain/tools.json
+plugins = get_plugins_kurohub()         # from brain/plugins.json
+skills = get_skills_kurohub()           # from brain/skills.json
+integrations = get_integrations_kurohub() # from brain/integrations.json
 ```
 

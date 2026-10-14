@@ -27,7 +27,8 @@ class StoreItem:
     version: str = "1.0.0"
     author: str = "Kuro Hub"
     tags: List[str] = field(default_factory=list)
-    file_path: Optional[str] = None
+    file_path: Optional[str] = None          # tools only — single .py file path in hub repo
+    dir_path: Optional[str] = None           # plugins / skills / integrations — folder path in hub repo
     payload: Dict[str, Any] = field(default_factory=dict)
     installed: bool = False
 
@@ -45,13 +46,17 @@ class StoreItem:
         }
         if self.file_path:
             data["file_path"] = self.file_path
+        if self.dir_path:
+            data["dir_path"] = self.dir_path
         return data
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> StoreItem:
         raw_type = data.get("item_type", "tool")
         item_type = StoreItemType(raw_type) if raw_type in StoreItemType._value2member_map_ else StoreItemType.TOOL
-        file_path = data.get("file_path") or (data.get("payload", {}) if isinstance(data.get("payload"), dict) else {}).get("file_path")
+        payload = data.get("payload", {}) if isinstance(data.get("payload"), dict) else {}
+        file_path = data.get("file_path") or payload.get("file_path")
+        dir_path = data.get("dir_path") or payload.get("dir_path")
         return cls(
             id=data.get("id", data.get("name", "")),
             name=data.get("name", ""),
@@ -61,7 +66,8 @@ class StoreItem:
             author=data.get("author", "Kuro Hub"),
             tags=data.get("tags", []),
             file_path=file_path,
-            payload=data.get("payload", {}) if isinstance(data.get("payload"), dict) else {},
+            dir_path=dir_path,
+            payload=payload,
             installed=data.get("installed", False),
         )
 

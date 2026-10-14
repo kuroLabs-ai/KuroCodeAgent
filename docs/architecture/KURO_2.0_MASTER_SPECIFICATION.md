@@ -49,7 +49,7 @@
     - Sandboxed Skill Synthesis & Testing (`kurocode.evolution.generator` & `tester`)
     - Evolution Ledger (`kurocode.evolution.versioning`)
 11. [Extensibility: Store, Plugins & Integrations](#11-extensibility-store-plugins--integrations)
-    - Capability Marketplace (`kurocode.store.manager` & `catalog`)
+    - Capability Marketplace & KuroHub (`kurocode.store.manager` & `kuro_hub`)
     - Dynamic Tool Generator (`kurocode.tools.generator`)
     - Plugin System & Hot-Loading (`kurocode.plugins.manager`)
     - External Service Connectors (`kurocode.integrations`)
@@ -509,20 +509,25 @@ KURO improves its own capabilities over time through a structured cycle:
 
 ## 11. Extensibility: Store, Plugins & Integrations
 
-### 11.1 The Puzzle Store & Community Hub (`kurocode.store.manager` & `kuroLabs-ai/hub`)
-KURO implements a decentralized, catalog-driven puzzle-piece store architecture. Rather than bloating the core runtime with domain-specific capabilities, tools, plugins, and procedural skills are cataloged in and retrieved from the official **KuroLabs Capability Hub** at [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
+### 11.1 KuroHub & Community Hub (`kurocode.store.manager`, `kuro_hub` & `kuroLabs-ai/hub`)
+KURO implements a decentralized, puzzle-piece architecture. Rather than bloating the core runtime with domain-specific capabilities, tools, plugins, and procedural skills are cataloged in and retrieved from the official **KuroLabs Capability Hub** at [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
 
-* **Master Catalog Registry (`catalog.json`)**: Hosted on GitHub `main` branch (`https://raw.githubusercontent.com/kuroLabs-ai/hub/main/catalog.json`), indexing all verified capabilities (`tool`, `plugin`, `skill`, `integration`) with entrypoints, risk ratings, and dependencies.
-* **On-Demand Synchronization (`/store update`)**: Queries the remote hub endpoint, parses the remote catalog payload, and merges community capabilities into the local store index at `%APPDATA%\Kuro\store_catalog.json`.
-* **Hot-Loading & Assembly (`/store install <name>`)**: Downloads raw source files directly from GitHub (`tools/<name>.py`, `plugins/<name>/`, `skills/<name>/SKILL.md`), validates the Python AST against the sandbox guard, and hot-registers entrypoints into `PluginRegistry` without restarting the process.
-* **Contributing & Publishing**: Developers can publish custom capabilities using `/store publish <name> <type> <desc>` or submit pull requests directly to `kuroLabs-ai/hub`.
+* **Master KuroHub Registry (`kuro-hub.json`)**: Hosted on GitHub `main` branch (`https://raw.githubusercontent.com/kuroLabs-ai/hub/main/kuro-hub.json`), indexing verified capabilities (`tool`, `plugin`, `skill`, `integration`) with entrypoints, risk ratings, and dependencies.
+* **On-Demand Synchronization (`/hub update` or `/store update`)**: Queries the remote hub endpoint, parses the remote KuroHub payload, and merges community capabilities into the local store index at `%APPDATA%\Kuro\store_kuro-hub.json`.
+* **Clean Capability Placement**: 
+  - **Tools**: Installed as standalone `.py` scripts directly in `tools/` and indexed in `src/kurocode/brain/tools.json`.
+  - **Plugins**: Installed as complete folder packages into `plugins/` and indexed in `src/kurocode/brain/plugins.json`.
+  - **Skills**: Installed as complete procedural directories into `skills/` and indexed in `src/kurocode/brain/skills.json`.
+  - **Integrations**: Installed into `integrations/` and indexed in `src/kurocode/brain/integrations.json`.
+* **Hot-Loading & Assembly (`/hub install <name>`)**: Validates the Python AST against the sandbox guard and hot-registers entrypoints into `PluginRegistry` without restarting the process.
+* **Contributing & Publishing**: Developers can publish custom capabilities using `/hub publish <name> <type> <desc>` or submit pull requests directly to `kuroLabs-ai/hub`.
 
 ### 11.2 Dynamic Tool Generator (`kurocode.tools.generator`)
 Allows the agent to write its own tools at runtime:
 1. Inspects proposed Python code with the AST Sandbox Guard.
 2. Compiles code in an isolated module scope.
 3. Registers the entrypoint function into `PluginRegistry`.
-4. Persists the tool to `plugins/dynamic_<name>/tool.py`.
+4. Persists the tool to `tools/<name>.py` and records it in `src/kurocode/brain/tools.json`.
 
 ### 11.3 External Integrations (`kurocode.integrations`)
 Modular connectors inherit from `BaseIntegration` to provide standard APIs:

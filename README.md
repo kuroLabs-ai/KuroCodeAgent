@@ -213,7 +213,7 @@ kuro --json "Check database schema and table names"
 
 ## 🎮 CLI Orders & Slash Commands
 
-KURO comes equipped with over 30 specialized slash commands to inspect, control, configure, and operate your machine:
+KURO's interactive terminal REPL provides a streamlined, clutter-free Tab menu containing essential system, security, KuroHub, and skill commands:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -221,64 +221,39 @@ KURO comes equipped with over 30 specialized slash commands to inspect, control,
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### ⚙️ Core Configuration & Engine Control
+### ⚙️ System & Configuration
 | Command | Usage / Example | Description |
 | :--- | :--- | :--- |
 | **`/status`** | `/status` | Displays active provider, model, loaded key counts, Safe Mode, and checkpoint status. |
+| **`/system`** | `/system` | Displays live hardware telemetry: CPU logical cores, RAM utilization, and disk storage stats. |
+| **`/top`** | `/top [limit]` | Scans active operating system processes ordered by memory footprint. |
 | **`/safe`** | `/safe <on\|off\|toggle\|allow <tool>\|clear>` | Configures permission gate. `/safe on` requires approval for file writes; `/safe allow run_command` whitelists a tool. |
 | **`/pool`** | `/pool` | Displays live multi-key pool rotation status, active keys, and HTTP 429 rate-limit cooldown timers. |
-| **`/models`** | `/models` | Displays priority fallback model chains for the active provider. |
+| **`/models`** | `/models [provider]` | Displays priority fallback model chains for the active provider. |
 | **`/key`** | `/key [provider] <KEY>` | Securely saves an API key to the active provider pool and commits it to the encrypted vault. |
 | **`/undo`** | `/undo` | Rolls back the last automated file changes using Git stash checkpoints. |
 | **`!<cmd>`** | `!git status` or `!dir` | **Direct Shell Bypass**: Executes locally in OS shell without calling LLM. |
 
-### 🧠 Memory, Task Planning & Analytics
+### 🧩 KuroHub & Capabilities
 | Command | Usage / Example | Description |
 | :--- | :--- | :--- |
-| **`/plan`** | `/plan Build a FastAPI authentication service` | Decomposes high-level goals into an ordered multi-step execution plan table. |
-| **`/tasks`** | `/tasks` | Lists recorded task lifecycles (`PENDING` $\to$ `PLANNING` $\to$ `EXECUTING` $\to$ `VERIFYING` $\to$ `COMPLETED`). |
-| **`/metrics`** | `/metrics` | Displays execution analytics: elapsed duration, tool call counts, token usage, and costs. |
+| **`/hub`** | `/hub [list\|search <q>\|install <item>\|remove <item>\|update]` | Browse and manage capabilities in KuroHub (tools, plugins, skills, integrations). |
+| **`/store`** | `/store search crypto` or `/store install json_inspector` | Alias for KuroHub store manager. |
+| **`/skills`** | `/skills` | Lists all installed and self-learned procedural skills in `skills.json`. |
+| **`/<skill> [prompt]`** | `/<skill-name> <custom instructions>` | Directly executes an installed procedural skill with LLM guidance and parameters. |
+| **`/plugin`** | `/plugin [list\|install <source>\|remove <name>]` | Manages modular plugins (installed as complete folders into `plugins/`). |
+| **`/integrations`**| `/integrations [connect <service> <token>\|disconnect <service>]` | Manages external service bridges (Telegram, Discord, GitHub, Google Drive). |
+
+### 🧠 Memory, Vault & Session
+| Command | Usage / Example | Description |
+| :--- | :--- | :--- |
+| **`/vault`** | `/vault [status\|list\|set\|get\|delete\|lock\|unlock]` | Manages Windows DPAPI / AES-256 encrypted credential vault. |
 | **`/memory`** | `/memory` | Inspects stored episodic conversation memories and context summaries from SQLite. |
 | **`/clear`** | `/clear` | Clears active conversation memory for a clean workspace. |
+| **`/help`** | `/help` | Displays the categorized command reference. |
+| **`exit / quit`** | `exit` or `quit` | Terminates the active KURO session. |
 
-### 🛠️ Workspace & System Perception
-| Command | Usage / Example | Description |
-| :--- | :--- | :--- |
-| **`/system`** | `/system` | Displays live hardware telemetry: CPU logical cores, RAM utilization, and disk storage stats. |
-| **`/top`** | `/top [limit]` | Scans active operating system processes ordered by memory footprint. |
-| **`/screen`** | `/screen` | Captures desktop screenshot for visual analysis and troubleshooting. |
-| **`/open`** | `/open <app\|file\|url>` | Launches local desktop application or opens target file in default OS handler. |
-| **`/dir`** | `/dir [path]` | Lists directory contents, file types, and sizes with tab path completion. |
-| **`/project`** | `/project` | Scans directory tech stack (languages, frameworks, entrypoints, test commands). |
-| **`/notes`** | `/notes dev_log.md Added auth flow` | Writes structured markdown note into `brain/notes/`. |
-| **`/sql`** | `/sql SELECT * FROM tasks;` | Executes raw SQL query directly against the SQLite brain database (`brain/kuro.db`). |
-
-### 🌐 Web, Perception & Smart Notifications
-| Command | Usage / Example | Description |
-| :--- | :--- | :--- |
-| **`/search`** | `/search Latest Python 3.13 features` | Performs live web searches via DuckDuckGo and Wikipedia scrapers. |
-| **`/see`** | `/see assets/kuro_icon.png Explain this icon` | Inspects local images and screenshots with multimodal vision models. |
-| **`/browse`** | `/browse https://github.com` | Headless browser: fetches URL, strips HTML noise, and extracts text and links. |
-| **`/notify`** | `/notify Critical build failure on main` | Sends alerts to Telegram or Discord with priority colors, voice speech, and attachments. |
-
-### 🧩 Capability Store & Modular Extensions
-| Command | Usage / Example | Description |
-| :--- | :--- | :--- |
-| **`/store`** | `/store [list\|search <q>\|install <item>\|remove <item>]` | Browses and installs puzzle-piece capabilities (tools, plugins, skills, integrations). |
-| **`/tool`** | `/tool create <name> <code>` | Authors, compiles, AST-validates, and hot-loads custom dynamic Python tools at runtime. |
-| **`/plugin`** | `/plugin [list\|install <source>\|remove <name>]` | Manages external plugins from local directories or Git repositories. |
-| **`/skill`** | `/skill [list\|install <path>\|delete <name>]` | Manages procedural skills and workflows. |
-| **`/learn`** | `/learn release_flow Step 1: Run pytest...` | Teaches KURO a new procedural skill and saves it to learned skills. |
-| **`/integrations`**| `/integrations` | Lists connected status for Telegram, Discord, GitHub, Google Drive, and GitLab. |
-| **`/connect`** | `/connect telegram <BOT_TOKEN> [CHAT_ID]` | Connects service token and securely stores it in the encrypted vault. |
-
-### 🩺 Self-Healing, Evolution & Security
-| Command | Usage / Example | Description |
-| :--- | :--- | :--- |
-| **`/heal`** | `/heal [status\|repair <tool> [err]]` | Inspects self-healing engine; triggers diagnosis, `pip install`, or syntax rollback. |
-| **`/evolve`** | `/evolve [propose\|history]` | Runs performance bottleneck analysis, generates capability proposals, and tracks ledger. |
-| **`/vault`** | `/vault [status\|list\|set\|get\|delete\|migrate]` | Manages Windows DPAPI / AES-256 encrypted credential vault. |
-| **`/sandbox`** | `/sandbox [status\|on\|off\|toggle\|check <code>]` | Configures AST execution guardrails and validates Python scripts. |
+> **Autonomous Execution:** Capabilities such as web searching, headless browsing, multimodal image inspection, code execution, planning, note taking, and self-healing error recovery are orchestrated autonomously by Kuro without cluttering the slash menu.
 
 ---
 
@@ -334,20 +309,29 @@ KURO audits its own performance over time (`kurocode.evolution`):
 
 ---
 
-## 🧩 Puzzle Store & Modular Extensibility
+## 🧩 KuroHub & Modular Capability Architecture
 
-KURO treats capabilities as modular **puzzle pieces**:
-* **Tools**: Discrete callable functions (e.g., `json_inspector`, `hash_calculator`, `base64_codec`).
-* **Plugins**: Full modular packages with manifests, entrypoints, and assets.
-* **Skills**: Multi-step procedural workflows (e.g., `git_bisect_flow`, `tdd_refactoring`, `system_check`).
-* **Integrations**: Connected external services (Telegram, Discord, GitHub, Drive).
+KURO manages capabilities as modular, plug-and-play **puzzle pieces**:
+* **Tools**: Discrete callable functions saved as individual `.py` files in `tools/` and registered in `brain/tools.json`.
+* **Plugins**: Full modular capability packages installed as complete directory trees into `plugins/` and registered in `brain/plugins.json`.
+* **Skills**: Multi-step procedural routines installed as directory trees into `skills/` and registered in `brain/skills.json`.
+* **Integrations**: Connected service bridges installed into `integrations/` and registered in `brain/integrations.json`.
+
+### Direct Procedural Skill Invocation (`/<skill-name>`)
+Installed skills are dynamically loaded into your Tab autocompletion menu. When invoked via:
+```bash
+/<skill-name> [prompt or parameters]
+# Example:
+/git-release-workflow bump version to 2.1.0 and run tests
+```
+KURO automatically loads the skill instructions from `skills/<name>/SKILL.md` (or `README.md`), composes the execution plan with your prompt, and executes the routine step-by-step with deterministic verification.
 
 ### The KuroLabs Capability Hub (`kuroLabs-ai/hub`)
 KURO is natively integrated with the official community registry at [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub):
-* **Live Catalog Sync**: Run `/store update` to fetch the latest `catalog.json` from `kuroLabs-ai/hub`.
-* **One-Click Installation**: Install community puzzle pieces (such as `regex_tester`, `currency_converter`, `dependency_guard`) directly via `/store install <name>`.
-* **Decentralized Extensibility**: Keeps the core runtime lean while enabling an open community directory of tools (`tools/`), plugins (`plugins/`), and procedural routines (`skills/`).
-* **Contribution & Publishing**: Author custom capabilities with `/store publish` or contribute directly by opening pull requests to [`kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
+* **Live Hub Sync**: Run `/hub update` to fetch the latest capability registry (`kuro-hub.json`).
+* **One-Click Installation**: Install community puzzle pieces directly via `/hub install <name>` or `/store install <name>`.
+* **Clean File Placement**: Tools install cleanly as single `.py` files into `tools/`, while plugins, skills, and integrations install as self-contained folders into `plugins/`, `skills/`, and `integrations/`.
+* **Contribution & Publishing**: Author custom capabilities with `/hub publish` or contribute directly by opening pull requests to [`kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
 
 ---
 
