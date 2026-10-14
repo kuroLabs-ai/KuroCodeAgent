@@ -237,8 +237,8 @@ KURO's interactive terminal REPL provides a streamlined, clutter-free Tab menu c
 ### 🧩 KuroHub & Capabilities
 | Command | Usage / Example | Description |
 | :--- | :--- | :--- |
-| **`/hub`** | `/hub [list\|search <q>\|install <item>\|remove <item>\|update]` | Browse and manage capabilities in KuroHub (tools, plugins, skills, integrations). |
-| **`/store`** | `/store search crypto` or `/store install json_inspector` | Alias for KuroHub store manager. |
+| **`/hub`** | `/hub [list\|search <q>\|install <item>\|remove <item>\|info <item>\|update]` | Browse and manage capabilities in KuroHub (tools, plugins, skills, integrations). |
+| **`/store`** | `/store [list\|search <q>\|install <item>\|remove <item>\|info <item>\|update]` | Alias for `/hub` store manager. |
 | **`/skills`** | `/skills` | Lists all installed and self-learned procedural skills in `skills.json`. |
 | **`/<skill> [prompt]`** | `/<skill-name> <custom instructions>` | Directly executes an installed procedural skill with LLM guidance and parameters. |
 | **`/plugin`** | `/plugin [list\|install <source>\|remove <name>]` | Manages modular plugins (installed as complete folders into `plugins/`). |
