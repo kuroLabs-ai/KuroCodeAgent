@@ -24,6 +24,8 @@ All external services integrate via `BaseIntegration` (`src/kurocode/integration
 * **Capabilities**: Bot messaging to users, groups, and channels (`@channel` or numeric ID), photo/document uploads, diagnostics.
 * **Connection**:
   ```bash
+  /integrations connect telegram <BOT_TOKEN> [CHAT_ID_OR_CHANNEL]
+  # or
   /connect telegram <BOT_TOKEN> [CHAT_ID_OR_CHANNEL]
   ```
 * **API Methods**: `sendMessage`, `sendPhoto`, `sendDocument`, `getChat`, `getMe`.

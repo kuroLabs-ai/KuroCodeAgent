@@ -77,17 +77,13 @@ def register(registry):
 
 ---
 
-## 3. Dynamic Tool Hot-Loading via `/tool create`
+## 3. Dynamic Tool Hot-Loading & Generation
 
-KURO can author and hot-register custom Python tools at runtime without a manifest or process restart:
-
-```bash
-/tool create cube_calc def cube_calc(n: int) -> dict:\n    return {'success': True, 'result': n ** 3}
-```
+KURO can author and hot-register custom Python tools at runtime without process restarts:
 1. Validates code against the AST safety sandbox.
 2. Compiles in an isolated module scope.
 3. Automatically registers the function into `PluginRegistry`.
-4. Persists the tool to `plugins/dynamic_cube_calc/tool.py`.
+4. Persists the tool to `tools/<name>.py` (or `%APPDATA%\Kuro\tools\<name>.py`) and records it in `src/kurocode/brain/tools.json`.
 
 ---
 
@@ -97,11 +93,15 @@ To share your plugin, tool, or procedural skill with all KuroCode agents worldwi
 
 1. **Publish Locally**:
    ```bash
-   /store publish <name> <tool|plugin|skill> <description>
+   /hub publish <name> <tool|plugin|skill|integration> <description>
+   # or
+   /store publish <name> <tool|plugin|skill|integration> <description>
    ```
 2. **Submit to the Community Hub**:
    - Fork [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
-   - Place your tool in `tools/<name>.py`, plugin in `plugins/<name>/`, or skill in `skills/<name>/SKILL.md`.
-   - Register the item in `catalog.json` with its metadata, version, tags, and entrypoint.
-   - Open a pull request against `kuroLabs-ai/hub`. Once merged, every KURO agent can install it with `/store install <name>`.
+   - Place your tool as a single file in `tools/<name>.py`.
+   - Place your plugin as a full directory in `plugins/<name>/`.
+   - Place your skill as a folder in `skills/<name>/SKILL.md` (or `README.md`).
+   - Register the item in `kuro-hub.json` with its metadata, version, tags, and entrypoint.
+   - Open a pull request against `kuroLabs-ai/hub`. Once merged, every KURO agent can install it with `/hub install <name>`.
 

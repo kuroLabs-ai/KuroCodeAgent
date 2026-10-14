@@ -108,6 +108,7 @@ CACHE_DIR: Path    = USER_DATA_DIR / "cache"
 UPDATES_DIR: Path  = USER_DATA_DIR / "updates"
 PROJECTS_DIR: Path = USER_DATA_DIR / "projects"
 INTEGRATIONS_DIR: Path = USER_DATA_DIR / "integrations"
+CUSTOM_TOOLS_DIR: Path = USER_DATA_DIR / "tools"
 SCRATCH_DIR: Path  = USER_DATA_DIR / "scratch"
 SANDBOX_DIR: Path  = USER_DATA_DIR / "sandbox"
 NOTES_DIR: Path    = BRAIN_DIR / "notes"
@@ -135,6 +136,13 @@ VAULT_FILE: Path   = CONFIG_DIR / "vault.enc"
 KURO_CONFIG: Path        = CONFIG_DIR / "kuro.json"
 INTEGRATIONS_CONFIG: Path = CONFIG_DIR / "integrations.json"
 
+# Capability KuroHub JSON Registries (in BRAIN_DIR alongside models.json)
+MODELS_JSON: Path        = BRAIN_DIR / "models.json"
+TOOLS_JSON: Path         = BRAIN_DIR / "tools.json"
+PLUGINS_JSON: Path       = BRAIN_DIR / "plugins.json"
+SKILLS_JSON: Path        = BRAIN_DIR / "skills.json"
+INTEGRATIONS_JSON: Path  = BRAIN_DIR / "integrations.json"
+
 # System prompts / personality (user-editable in data dir)
 SYSTEM_PROMPT_FILE: Path = BRAIN_DIR / "kuro_prompt.txt"
 PERSONALITY_FILE: Path   = BRAIN_DIR / "personality.md"
@@ -152,6 +160,7 @@ _REQUIRED_DIRS = [
     LOGS_DIR,
     PROJECTS_DIR,
     INTEGRATIONS_DIR,
+    CUSTOM_TOOLS_DIR,
     NOTES_DIR,
 ]
 

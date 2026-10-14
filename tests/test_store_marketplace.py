@@ -14,19 +14,19 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 
 class TestStoreMarketplace(unittest.TestCase):
-    """Tests the Kuro capability store, catalog, and install/remove lifecycle."""
+    """Tests the Kuro capability store, kurohub, and install/remove lifecycle."""
 
     def setUp(self):
         from kurocode.store import StoreManager
         self.tmpdir = tempfile.TemporaryDirectory()
-        self.catalog_file = Path(self.tmpdir.name) / "test_store_catalog.json"
-        self.manager = StoreManager(catalog_file=self.catalog_file)
+        self.kurohub_file = Path(self.tmpdir.name) / "test_store_kuro-hub.json"
+        self.manager = StoreManager(kurohub_file=self.kurohub_file)
 
     def tearDown(self):
         self.tmpdir.cleanup()
 
-    def test_01_catalog_and_categories(self):
-        items = self.manager.get_catalog()
+    def test_01_kurohub_and_categories(self):
+        items = self.manager.get_kurohub()
         self.assertGreater(len(items), 0)
 
         # Check all puzzle-piece categories are present
@@ -131,7 +131,7 @@ class TestStoreMarketplace(unittest.TestCase):
         mock_resp.__enter__.return_value = mock_resp
 
         with patch("urllib.request.urlopen", return_value=mock_resp):
-            sync_res = self.manager.update_from_remote("https://raw.githubusercontent.com/kuroLabs-ai/hub/main/catalog.json")
+            sync_res = self.manager.update_from_remote("https://raw.githubusercontent.com/kuroLabs-ai/hub/main/kuro-hub.json")
             self.assertTrue(sync_res.get("success"))
             self.assertEqual(sync_res.get("count"), 1)
 

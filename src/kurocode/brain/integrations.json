@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "description": "KURO Integrations Registry — Central catalog of external service connectors and OAuth/token adapters.",
+  "integrations": {
+    "github": {
+      "name": "github",
+      "display_name": "GitHub",
+      "description": "Repository automation, PR management, issues, and release publishing",
+      "folder": "src/kurocode/integrations",
+      "entrypoint": "github_integration.py",
+      "auth_type": "token",
+      "connected": false
+    },
+    "gitlab": {
+      "name": "gitlab",
+      "display_name": "GitLab",
+      "description": "Self-hosted and cloud GitLab CI/CD, project repositories, and pipelines",
+      "folder": "src/kurocode/integrations",
+      "entrypoint": "gitlab_integration.py",
+      "auth_type": "token",
+      "connected": false
+    },
+    "google_drive": {
+      "name": "google_drive",
+      "display_name": "Google Drive",
+      "description": "Cloud file sync, document upload, and remote storage access",
+      "folder": "src/kurocode/integrations",
+      "entrypoint": "google_drive_integration.py",
+      "auth_type": "oauth2",
+      "connected": false
+    },
+    "discord": {
+      "name": "discord",
+      "display_name": "Discord",
+      "description": "Discord bot and webhook notifier for task completions and alerts",
+      "folder": "src/kurocode/integrations",
+      "entrypoint": "discord_integration.py",
+      "auth_type": "webhook_or_token",
+      "connected": false
+    },
+    "telegram": {
+      "name": "telegram",
+      "display_name": "Telegram",
+      "description": "Telegram bot messaging and command listener",
+      "folder": "src/kurocode/integrations",
+      "entrypoint": "telegram_integration.py",
+      "auth_type": "bot_token",
+      "connected": false
+    },
+    "email": {
+      "name": "email",
+      "display_name": "Email (SMTP/IMAP)",
+      "description": "Email dispatch and notification alerts via secure SMTP",
+      "folder": "src/kurocode/integrations",
+      "entrypoint": "email_integration.py",
+      "auth_type": "credentials",
+      "connected": false
+    }
+  }
+}

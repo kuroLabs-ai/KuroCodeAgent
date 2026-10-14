@@ -1,0 +1,210 @@
+{
+  "version": "2.0.0",
+  "description": "KURO Tools Registry \u2014 Central catalog of autonomous tools and execution capabilities.",
+  "tools": {
+    "run_command": {
+      "name": "run_command",
+      "description": "Execute local shell commands with live output, confirmation guards, and AST inspection",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.system:run_command",
+      "file_path": "src/kurocode/tools/system.py",
+      "risk_level": "confirm",
+      "parameters": {
+        "cmd": "string"
+      }
+    },
+    "read_file": {
+      "name": "read_file",
+      "description": "Read file contents from local workspace or disk",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.files:read_file",
+      "file_path": "src/kurocode/tools/files.py",
+      "risk_level": "safe",
+      "parameters": {
+        "path": "string"
+      }
+    },
+    "write_file": {
+      "name": "write_file",
+      "description": "Write or overwrite file contents with automatic directory creation and Git checkpoints",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.files:write_file",
+      "file_path": "src/kurocode/tools/files.py",
+      "risk_level": "confirm",
+      "parameters": {
+        "path": "string",
+        "content": "string"
+      }
+    },
+    "edit_file": {
+      "name": "edit_file",
+      "description": "Replace an exact target code chunk in an existing file with Git rollback support",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.files:edit_file",
+      "file_path": "src/kurocode/tools/files.py",
+      "risk_level": "confirm",
+      "parameters": {
+        "path": "string",
+        "target": "string",
+        "replacement": "string"
+      }
+    },
+    "list_dir": {
+      "name": "list_dir",
+      "description": "List files, subdirectories, and metadata in a given path",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.files:list_dir",
+      "file_path": "src/kurocode/tools/files.py",
+      "risk_level": "safe",
+      "parameters": {
+        "path": "string"
+      }
+    },
+    "execute_python": {
+      "name": "execute_python",
+      "description": "Safely compile and execute Python code in an isolated AST-sandboxed execution context",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.interpreter:execute_python",
+      "file_path": "src/kurocode/tools/interpreter.py",
+      "risk_level": "confirm",
+      "parameters": {
+        "code": "string"
+      }
+    },
+    "search_web": {
+      "name": "search_web",
+      "description": "Search the live web via DuckDuckGo and Wikipedia with ranked snippets",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.web:search_web",
+      "file_path": "src/kurocode/tools/web.py",
+      "risk_level": "safe",
+      "parameters": {
+        "query": "string"
+      }
+    },
+    "fetch_url": {
+      "name": "fetch_url",
+      "description": "Fetch text, HTML, and markdown content from a public URL",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.web:fetch_url",
+      "file_path": "src/kurocode/tools/web.py",
+      "risk_level": "safe",
+      "parameters": {
+        "url": "string"
+      }
+    },
+    "analyze_image": {
+      "name": "analyze_image",
+      "description": "Multimodal visual inspection and analysis of desktop screenshots or image files",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.vision:analyze_image",
+      "file_path": "src/kurocode/tools/vision.py",
+      "risk_level": "safe",
+      "parameters": {
+        "path": "string",
+        "prompt": "string"
+      }
+    },
+    "browse_web": {
+      "name": "browse_web",
+      "description": "Headless browser session for modern dynamic single-page web applications",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.web_browser:browse_web",
+      "file_path": "src/kurocode/tools/web_browser.py",
+      "risk_level": "safe",
+      "parameters": {
+        "url": "string"
+      }
+    },
+    "automate_browser": {
+      "name": "automate_browser",
+      "description": "Perform headless browser actions such as clicking elements, filling forms, and scrolling",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.web_browser:automate_browser",
+      "file_path": "src/kurocode/tools/web_browser.py",
+      "risk_level": "confirm",
+      "parameters": {
+        "url": "string",
+        "actions": "list"
+      }
+    },
+    "send_notification": {
+      "name": "send_notification",
+      "description": "Dispatch system and webhook notifications across Discord, Telegram, and desktop",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.notifier:send_notification",
+      "file_path": "src/kurocode/tools/notifier.py",
+      "risk_level": "safe",
+      "parameters": {
+        "title": "string",
+        "message": "string",
+        "channel": "string"
+      }
+    },
+    "inspect_db": {
+      "name": "inspect_db",
+      "description": "Inspect and query SQLite database schema, tables, and rows",
+      "type": "builtin",
+      "entrypoint": "kurocode.core.agent:inspect_db",
+      "file_path": "src/kurocode/core/agent.py",
+      "risk_level": "safe",
+      "parameters": {
+        "db_path": "string",
+        "query": "string"
+      }
+    },
+    "create_tool": {
+      "name": "create_tool",
+      "description": "Dynamically author, AST-validate, compile, and hot-register new Python tool",
+      "type": "builtin",
+      "entrypoint": "kurocode.tools.generator:tool_generator",
+      "file_path": "src/kurocode/tools/generator.py",
+      "risk_level": "confirm",
+      "parameters": {
+        "name": "string",
+        "description": "string",
+        "code": "string"
+      }
+    },
+    "custom_math_adder": {
+      "name": "custom_math_adder",
+      "description": "Adds two integers dynamically",
+      "type": "custom",
+      "file_path": "tools/custom_math_adder.py",
+      "risk_level": "confirm",
+      "parameters": {}
+    },
+    "json_inspector": {
+      "name": "json_inspector",
+      "description": "Fast JSON formatter, syntax validator, and schema inspector.",
+      "type": "custom",
+      "file_path": "tools/json_inspector.py",
+      "risk_level": "confirm",
+      "parameters": {}
+    },
+    "cube_number": {
+      "name": "cube_number",
+      "description": "Calculates cube of an integer",
+      "type": "custom",
+      "file_path": "tools/cube_number.py",
+      "risk_level": "confirm",
+      "parameters": {}
+    },
+    "safe_math": {
+      "name": "safe_math",
+      "description": "Online tool installed from https://raw.githubusercontent.com/kuroLabs-ai/hub/main/tools/safe_math.py",
+      "type": "custom",
+      "file_path": "tools/safe_math.py",
+      "risk_level": "confirm",
+      "parameters": {}
+    },
+    "currency_converter": {
+      "name": "currency_converter",
+      "description": "Currency conversion tool",
+      "type": "custom",
+      "file_path": "tools/currency_converter.py",
+      "risk_level": "confirm",
+      "parameters": {}
+    }
+  }
+}

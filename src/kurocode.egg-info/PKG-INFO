@@ -379,7 +379,7 @@ KURO treats capabilities as modular **puzzle pieces**:
 
 ### The KuroLabs Capability Hub (`kuroLabs-ai/hub`)
 KURO is natively integrated with the official community registry at [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub):
-* **Live Catalog Sync**: Run `/store update` to fetch the latest `catalog.json` from `kuroLabs-ai/hub`.
+* **Live Catalog Sync**: Run `/store update` to fetch the latest `kuro-hub.json` from `kuroLabs-ai/hub`.
 * **One-Click Installation**: Install community puzzle pieces (such as `regex_tester`, `currency_converter`, `dependency_guard`) directly via `/store install <name>`.
 * **Decentralized Extensibility**: Keeps the core runtime lean while enabling an open community directory of tools (`tools/`), plugins (`plugins/`), and procedural routines (`skills/`).
 * **Contribution & Publishing**: Author custom capabilities with `/store publish` or contribute directly by opening pull requests to [`kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).

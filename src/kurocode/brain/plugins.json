@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "description": "KURO Plugins Registry \u2014 Central catalog of modular plugin packages loaded as folders.",
+  "plugins": {
+    "my_plugin_src": {
+      "name": "my_plugin_src",
+      "version": "1.0.0",
+      "description": "Echo test plugin",
+      "folder": "plugins/my_plugin_src",
+      "entrypoint": "main.py",
+      "enabled": true
+    }
+  }
+}

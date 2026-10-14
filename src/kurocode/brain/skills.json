@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "description": "KURO Skills Registry \u2014 Central catalog of autonomous workflow procedures and skills.",
+  "skills": {
+    "git_bisect_flow": {
+      "name": "git_bisect_flow",
+      "slug": "git_bisect_flow",
+      "description": "Routine for automated git bisect regression hunt",
+      "version": "1.0.0",
+      "folder": "skills/git_bisect_flow",
+      "manifest": "skills/git_bisect_flow/skill.json",
+      "readme": "skills/git_bisect_flow/README.md"
+    },
+    "tdd_refactoring": {
+      "name": "tdd_refactoring",
+      "slug": "tdd_refactoring",
+      "description": "Test-Driven Development refactoring routine (Red -> Green -> Refactor -> Verify).",
+      "version": "1.0.0",
+      "folder": "skills/tdd_refactoring",
+      "manifest": "skills/tdd_refactoring/skill.json",
+      "readme": "skills/tdd_refactoring/README.md"
+    }
+  }
+}

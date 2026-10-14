@@ -57,6 +57,13 @@ def save_learned_skill(
     legacy_file = SKILLS_DIR / f"{slug}.md"
     legacy_file.write_text(readme_content, encoding="utf-8")
 
+    # Sync into central skills.json catalog
+    try:
+        from kurocode.brain.kuro_hub import register_skill_in_json
+        register_skill_in_json(name=name, slug=slug, description=description, folder=f"skills/{slug}")
+    except Exception:
+        pass
+
     return {
         "success": True,
         "skill_name": name,
@@ -66,18 +73,21 @@ def save_learned_skill(
 
 
 def install_skill(source_path: str, skill_name: Optional[str] = None) -> Dict[str, Any]:
-    """Installs a skill from an external directory into SKILLS_DIR."""
+    """Installs a skill from an external directory into SKILLS_DIR as a complete folder."""
     ensure_skills_dir()
     src = Path(source_path)
     if not src.exists():
         return {"success": False, "error": f"Source path '{source_path}' does not exist."}
 
     name = skill_name or src.name
+    desc = f"Modular skill {name}"
     if src.is_dir() and (src / "skill.json").exists() and not skill_name:
         try:
             m = json.loads((src / "skill.json").read_text(encoding="utf-8"))
             if m.get("name"):
                 name = m["name"]
+            if m.get("description"):
+                desc = m["description"]
         except Exception:
             pass
 
@@ -85,31 +95,39 @@ def install_skill(source_path: str, skill_name: Optional[str] = None) -> Dict[st
     target = SKILLS_DIR / slug
 
     try:
+        target.mkdir(parents=True, exist_ok=True)
         if src.is_dir():
-            target.mkdir(parents=True, exist_ok=True)
             for item in src.iterdir():
                 if item.is_dir():
                     shutil.copytree(item, target / item.name, dirs_exist_ok=True)
                 else:
                     shutil.copy2(item, target / item.name)
         elif src.suffix == ".json":
-            target.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, target / "skill.json")
         elif src.suffix == ".md":
-            target.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, target / "README.md")
+        else:
+            shutil.copy2(src, target / src.name)
+
+        # Sync into central skills.json catalog
+        try:
+            from kurocode.brain.kuro_hub import register_skill_in_json
+            register_skill_in_json(name=name, slug=slug, description=desc, folder=f"skills/{slug}")
+        except Exception:
+            pass
+
         return {
             "success": True,
             "skill_name": name,
             "path": str(target),
-            "message": f"Skill '{name}' installed successfully.",
+            "message": f"Skill '{name}' installed successfully as folder at {target}.",
         }
     except Exception as e:
         return {"success": False, "error": f"Failed to install skill: {e}"}
 
 
 def list_learned_skills() -> List[Dict[str, Any]]:
-    """Lists all skills stored in SKILLS_DIR."""
+    """Lists all skills stored in SKILLS_DIR and skills.json catalog."""
     ensure_skills_dir()
     skills = []
     seen = set()
@@ -126,6 +144,22 @@ def list_learned_skills() -> List[Dict[str, Any]]:
                         "slug": d.name,
                         "description": data.get("description", ""),
                         "steps_count": len(data.get("steps", [])),
+                        "path": str(d),
+                    })
+                    seen.add(d.name)
+                except Exception:
+                    pass
+            elif (d / "SKILL.md").exists() or (d / "README.md").exists():
+                md_path = d / "SKILL.md" if (d / "SKILL.md").exists() else d / "README.md"
+                try:
+                    txt = md_path.read_text(encoding="utf-8")
+                    first_line = txt.splitlines()[0] if txt.splitlines() else d.name
+                    desc = first_line.lstrip("#").strip() or f"Procedural skill {d.name}"
+                    skills.append({
+                        "name": d.name,
+                        "slug": d.name,
+                        "description": desc,
+                        "steps_count": 1,
                         "path": str(d),
                     })
                     seen.add(d.name)
@@ -151,7 +185,7 @@ def list_learned_skills() -> List[Dict[str, Any]]:
 
 
 def delete_skill(name: str) -> bool:
-    """Removes a skill from SKILLS_DIR."""
+    """Removes a skill from SKILLS_DIR (deleting its folder) and unregisters it from skills.json."""
     ensure_skills_dir()
     slug = re.sub(r'[^a-zA-Z0-9_-]', '_', name.lower().strip())
     skill_dir = SKILLS_DIR / slug
@@ -167,7 +201,7 @@ def delete_skill(name: str) -> bool:
             if mf.exists():
                 try:
                     data = json.loads(mf.read_text(encoding="utf-8"))
-                    if data.get("name") in (name, slug):
+                    if data.get("name") in (name, slug) or data.get("slug") in (name, slug):
                         shutil.rmtree(d, ignore_errors=True)
                         deleted = True
                 except Exception:
@@ -177,6 +211,15 @@ def delete_skill(name: str) -> bool:
     if legacy_file.exists():
         legacy_file.unlink(missing_ok=True)
         deleted = True
+
+    # Remove from central skills.json catalog
+    try:
+        from kurocode.brain.kuro_hub import unregister_skill_from_json
+        unregister_skill_from_json(slug)
+        unregister_skill_from_json(name)
+    except Exception:
+        pass
+
     return deleted
 
 

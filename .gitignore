@@ -35,6 +35,6 @@ dist/
 scratch/*
 !scratch/.gitkeep
 evolution_history.json
-store_catalog.json
+store_kuro-hub.json
 .kuro_backups/
 

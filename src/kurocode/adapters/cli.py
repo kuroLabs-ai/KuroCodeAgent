@@ -162,57 +162,56 @@ BANNER_LINES = [
     "",
 ]
 
+# Essential system commands kept in slash menu
 COMMAND_LIST = [
-    "/help", "/status", "/system", "/top", "/screen", "/open",
-    "/pool", "/models", "/key", "/undo", "/clear", "/memory",
-    "/search", "/see", "/browse",
-    "/learn", "/skills", "/skill", "/plan", "/sql", "/notes",
-    "/notify", "/dir", "/project", "/integrations", "/connect", "/disconnect",
-    "/tasks", "/metrics", "/vault", "/sandbox", "/safe",
-    "/plugin", "/tool", "/heal", "/evolve", "/store",
+    "/help", "/store", "/hub", "/vault", "/key", "/models", "/status",
+    "/safe", "/pool", "/undo", "/clear", "/memory", "/system",
+    "/top", "/skills", "/plugin", "/integrations",
     "exit", "quit",
 ]
 
 SLASH_DESCRIPTIONS = {
     "/help":         "Show command reference & capabilities",
-    "/status":       "Active provider, model, & safe mode status",
-    "/system":       "Live PC hardware telemetry (CPU, RAM, Disk, OS)",
-    "/top":          "List active running processes & memory footprint",
-    "/screen":       "Capture desktop screenshot for visual analysis",
-    "/open":         "Launch desktop app, file or URL: /open <target>",
-    "/safe":         "Toggle Safe Mode & permission prompts: /safe <on|off|toggle|status|allow <tool>>",
-    "/pool":         "API key pool & cooldown status",
-    "/models":       "Model fallback priority chain",
+    "/store":        "KuroHub Store: /store <list|search <q>|install <name>|remove <name>|update>",
+    "/hub":          "KuroHub Store: /hub <list|search <q>|install <name>|remove <name>|update>",
+    "/vault":        "Encrypted credential vault: /vault <set|get|list|delete|lock|unlock>",
     "/key":          "Add API key: /key <KEY> or /key <provider> <KEY>",
+    "/models":       "Model fallback priority chain & provider inspection",
+    "/status":       "Active provider, model, & safe mode status",
+    "/safe":         "Toggle Safe Mode & permission prompts: /safe <on|off|toggle|status>",
+    "/pool":         "API key pool & cooldown status",
     "/undo":         "Rollback last automated file changes",
     "/clear":        "Reset active conversation memory",
     "/memory":       "View stored conversation history & brain summary",
-    "/search":       "Live web search: /search <query>",
-    "/see":          "Vision analysis: /see <image_path> [prompt]",
-    "/browse":       "Headless web automation: /browse <url>",
-    "/store":        "Puzzle Store: /store <list|search <q>|install <name|url>|remove <name>|update>",
-    "/learn":        "Save custom routine: /learn <skill_name> <steps>",
+    "/system":       "Live PC hardware telemetry (CPU, RAM, Disk, OS)",
+    "/top":          "List active running processes & memory footprint",
     "/skills":       "List all KURO self-learned skills",
-    "/skill":        "Manage skills: /skill <list|install <path>|delete <name>>",
     "/plugin":       "Manage plugins: /plugin <list|install <source>|remove <name>>",
-    "/tool":         "Dynamic tools: /tool <list|create <name> <code>>",
-    "/heal":         "Self-healing engine: /heal [status|repair <tool> [err]]",
-    "/evolve":       "Self-improvement engine: /evolve [propose|history]",
-    "/plan":         "Task planning mode: /plan <goal_description>",
-    "/sql":          "Execute SQL query: /sql <query_or_script>",
-    "/notes":        "Write MD note: /notes <filename.md> <content>",
-    "/notify":       "Send notification (Discord/Telegram): /notify <message>",
-    "/dir":          "List directory contents: /dir [path]",
-    "/project":      "Show current project profile & architecture hints",
     "/integrations": "Manage connected services (GitHub, Google Drive, GitLab)",
-    "/connect":      "Connect service token: /connect <github|gitlab|drive|email> <TOKEN>",
-    "/disconnect":   "Disconnect service: /disconnect <github|gitlab|drive|email>",
-    "/tasks":        "List active/historical tasks & state lifecycle",
-    "/metrics":      "View execution analytics (tokens, tool calls, costs)",
-    "/vault":        "Encrypted credential vault: /vault <set|get|list|delete|lock|unlock|migrate>",
-    "/sandbox":      "Execution guard & AST sandbox: /sandbox <status|on|off|toggle|clean|check>",
 }
 
+
+def _get_installed_skills_map() -> dict[str, str]:
+    """Returns a mapping of /skill-name to its description for autocomplete and dispatch."""
+    skills_map: dict[str, str] = {}
+    try:
+        from kurocode.brain.kuro_hub import get_skills_kurohub
+        for slug, item in get_skills_kurohub().items():
+            cmd_name = f"/{slug.replace('_', '-')}"
+            skills_map[cmd_name] = item.get("description", "Installed procedural skill")
+    except Exception:
+        pass
+
+    try:
+        from kurocode.tools.self_improve import list_learned_skills
+        for s in list_learned_skills():
+            slug = s.get("slug", s.get("name", ""))
+            cmd_name = f"/{slug.replace('_', '-')}"
+            if cmd_name not in skills_map:
+                skills_map[cmd_name] = s.get("description", "Installed procedural skill")
+    except Exception:
+        pass
+    return skills_map
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -241,10 +240,10 @@ PT_STYLE = Style.from_dict({
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# KuroCompleter — Tab completion for slash commands and paths
+# KuroCompleter — Tab completion for slash commands, skills, and paths
 # ─────────────────────────────────────────────────────────────────────────────
 class KuroCompleter(Completer):
-    """Combines slash commands with autocomplete and path completion."""
+    """Combines essential slash commands and installed skills with autocomplete and path completion."""
 
     def __init__(self):
         self.path_completer = PathCompleter(only_directories=False, expanduser=True)
@@ -253,18 +252,36 @@ class KuroCompleter(Completer):
         text = document.text_before_cursor
         word = document.get_word_before_cursor()
 
-        # Slash command completion
+        # Dynamic skills map
+        skills_map = _get_installed_skills_map()
+
+        # Slash command and skill completion
         if text.startswith("/"):
+            query_prefix = text.split()[0] if text.split() else "/"
+
+            # 1. Essential system slash commands
             for cmd in COMMAND_LIST:
-                if cmd.startswith(text.split()[0] if text.split() else "/"):
+                if cmd.startswith(query_prefix):
                     raw_desc = SLASH_DESCRIPTIONS.get(cmd, "")
                     desc = html.escape(raw_desc)
                     cmd_escaped = html.escape(cmd)
                     yield Completion(
                         cmd,
-                        start_position=-len(text.split()[0] if text.split() else ""),
+                        start_position=-len(query_prefix),
                         display=HTML(f"<ansibrightcyan>{cmd_escaped}</ansibrightcyan>"),
                         display_meta=HTML(f"<ansidarkgray>{desc}</ansidarkgray>"),
+                    )
+
+            # 2. Installed skill commands (/skill-name)
+            for skill_cmd, skill_desc in skills_map.items():
+                if skill_cmd.startswith(query_prefix):
+                    desc = html.escape(skill_desc[:60])
+                    cmd_escaped = html.escape(skill_cmd)
+                    yield Completion(
+                        skill_cmd,
+                        start_position=-len(query_prefix),
+                        display=HTML(f"<ansigreen>{cmd_escaped}</ansigreen>"),
+                        display_meta=HTML(f"<ansimagenta>[SKILL] {desc}</ansimagenta>"),
                     )
             return
 
@@ -274,7 +291,7 @@ class KuroCompleter(Completer):
                 yield c
             return
 
-        # Regular chat — suggest /commands for quick access
+        # Regular chat — suggest essential /commands and skills for quick access
         if not text:
             for cmd in COMMAND_LIST:
                 raw_desc = SLASH_DESCRIPTIONS.get(cmd, "")
@@ -285,6 +302,15 @@ class KuroCompleter(Completer):
                     start_position=0,
                     display=HTML(f"<ansibrightcyan>{cmd_escaped}</ansibrightcyan>"),
                     display_meta=HTML(f"<ansidarkgray>{desc}</ansidarkgray>"),
+                )
+            for skill_cmd, skill_desc in skills_map.items():
+                desc = html.escape(skill_desc[:60])
+                cmd_escaped = html.escape(skill_cmd)
+                yield Completion(
+                    skill_cmd,
+                    start_position=0,
+                    display=HTML(f"<ansigreen>{cmd_escaped}</ansigreen>"),
+                    display_meta=HTML(f"<ansimagenta>[SKILL] {desc}</ansimagenta>"),
                 )
 
 
@@ -547,10 +573,12 @@ class CLIAdapter:
         self.console.print(Panel(status_text, border_style="bright_black", padding=(0, 1)))
 
     def display_help(self):
-        """Sectioned, modern styled help panel with command categories and usage examples."""
+        """Sectioned, modern styled help panel showing only commands available in the Tab menu."""
         sections = [
-            ("⚙️  Core & Configuration", [
+            ("⚙️  System & Configuration", [
                 ("/status",      "Show active LLM provider, model, & safe mode status", "Type [cyan]/status[/cyan]"),
+                ("/system",      "Live PC hardware telemetry (CPU, RAM, Disk, OS)",     "Type [cyan]/system[/cyan]"),
+                ("/top",         "List active running processes & memory footprint",    "[cyan]/top[/cyan] or [cyan]/top 20[/cyan]"),
                 ("/safe",        "Toggle Safe Mode & permission prompts (on/off/allow)", "[cyan]/safe off[/cyan] | [cyan]/safe allow execute_python[/cyan]"),
                 ("/pool",        "View API key pool rotation & rate limit cooldowns",    "Type [cyan]/pool[/cyan]"),
                 ("/models",      "View model fallback chain for active provider",       "Type [cyan]/models[/cyan]"),
@@ -558,51 +586,18 @@ class CLIAdapter:
                 ("/undo",        "Rollback last automated file changes via Git",        "Type [cyan]/undo[/cyan]"),
                 ("!<cmd>",       "Direct shell command bypass (executes locally)",      "[cyan]!git status[/cyan] or [cyan]!dir[/cyan]"),
             ]),
-            ("📁  Workspace & Project Awareness", [
-                ("/dir",         "List directory contents (with path Tab autocompletion)", "[cyan]/dir [path][/cyan]"),
-                ("/project",     "Inspect project profile, tech stack, entry points",   "Type [cyan]/project[/cyan]"),
-                ("/notes",       "Write structured Markdown note to brain/notes/",      "[cyan]/notes notes.md content[/cyan]"),
-                ("/sql",         "Execute raw SQL query or script on SQLite database",  "[cyan]/sql SELECT * FROM tasks;[/cyan]"),
+            ("🧩  KuroHub & Capabilities", [
+                ("/hub",         "Browse KuroHub capabilities (Tools, Plugins, Skills, Integrations)", "[cyan]/hub[/cyan] | [cyan]/hub list all[/cyan]"),
+                ("/store",       "Alias for KuroHub capability store",                  "[cyan]/store search <query>[/cyan] | [cyan]/store install <name>[/cyan]"),
+                ("/skills",      "List all installed & self-learned procedural skills",  "Type [cyan]/skills[/cyan]"),
+                ("/<skill> [p]", "Directly run an installed skill with custom prompt",   "[cyan]/<skill-name> <instructions>[/cyan]"),
+                ("/plugin",      "Manage plugins (install as folder, list, remove)",    "[cyan]/plugin list[/cyan] | [cyan]/plugin install <src>[/cyan]"),
+                ("/integrations","Manage connected services (GitHub, Telegram, Discord)","[cyan]/integrations[/cyan] | [cyan]/integrations connect <service> <token>[/cyan]"),
             ]),
-            ("🧠  Memory, Tasks & Metrics", [
+            ("🧠  Memory, Vault & Session", [
+                ("/vault",       "Encrypted credential vault manager (DPAPI / AES-256)", "[cyan]/vault list[/cyan] | [cyan]/vault set <K> <V>[/cyan]"),
                 ("/memory",      "Inspect persistent conversation memory and summary",  "Type [cyan]/memory[/cyan]"),
                 ("/clear",       "Reset active conversation working memory",            "Type [cyan]/clear[/cyan]"),
-                ("/plan",        "Task Planning Mode (decompose goal into steps)",      "[cyan]/plan build a trading bot[/cyan]"),
-                ("/tasks",       "List active and historical task state lifecycles",    "Type [cyan]/tasks[/cyan]"),
-                ("/metrics",     "View execution analytics (tokens, tool calls, costs)", "Type [cyan]/metrics[/cyan]"),
-            ]),
-            ("🛠️  Autonomous Tools & Perception", [
-                ("/search",      "Live web search (DuckDuckGo + Wikipedia)",            "[cyan]/search OpenAI news 2026[/cyan]"),
-                ("/see",         "Multimodal Vision & Image Analysis",                  "[cyan]/see C:\\image.png explain[/cyan]"),
-                ("/browse",      "Headless web browser automation & scraping",          "[cyan]/browse https://news.ycombinator.com[/cyan]"),
-                ("/notify",      "Send notification to Discord or Telegram",            "[cyan]/notify --channel telegram Hello[/cyan] | [cyan]/notify test[/cyan]"),
-            ]),
-            ("🧩  Puzzle Store & Capability Hub", [
-                ("/store",       "Browse puzzle-piece Store catalog (Tools, Plugins, Skills, Integrations)", "[cyan]/store[/cyan] | [cyan]/store list all[/cyan]"),
-                ("/store install", "One-click install puzzle piece capability",            "[cyan]/store install json_inspector[/cyan]"),
-                ("/store remove",  "Uninstall or disconnect puzzle piece capability",      "[cyan]/store remove json_inspector[/cyan]"),
-                ("/store search",  "Search puzzle pieces by keyword or tag",               "[cyan]/store search crypto[/cyan]"),
-                ("/store info",    "Display details, payload, and code preview",           "[cyan]/store info code_metrics[/cyan]"),
-            ]),
-            ("🌐  Integrations, Plugins & Skills", [
-                ("/integrations", "List connected services (Telegram, Discord, GitHub, Drive, GitLab)", "Type [cyan]/integrations[/cyan]"),
-                ("/connect",     "Connect external service & persist to Encrypted Vault", "[cyan]/connect gitlab <TOKEN>[/cyan]"),
-                ("/disconnect",  "Disconnect an external service integration",          "[cyan]/disconnect <service>[/cyan]"),
-                ("/plugin",      "Manage plugins (install from dir/git, list, remove)", "[cyan]/plugin list[/cyan] | [cyan]/plugin install <src>[/cyan]"),
-                ("/skill",       "Install, list, or delete modular skills",             "[cyan]/skill list[/cyan] | [cyan]/skill install <path>[/cyan]"),
-                ("/learn",       "Save custom procedural routine (Self-Improvement)",   "[cyan]/learn test_flow Run tests[/cyan]"),
-                ("/skills",      "List all self-learned skills and workflows",          "Type [cyan]/skills[/cyan]"),
-            ]),
-            ("🧬  Self-Healing & Evolution", [
-                ("/tool",        "Dynamic runtime tool generation & sandbox test",      "[cyan]/tool list[/cyan] | [cyan]/tool create <name> <code>[/cyan]"),
-                ("/heal",        "Dedicated Self-Healing engine diagnosis & repair",     "[cyan]/heal status[/cyan] | [cyan]/heal repair <tool> <err>[/cyan]"),
-                ("/evolve",      "Controlled self-improvement proposals & history",      "[cyan]/evolve propose[/cyan] | [cyan]/evolve history[/cyan]"),
-            ]),
-            ("🔒  Security & Privacy", [
-                ("/vault",       "Encrypted credential vault manager (DPAPI / AES-256)", "[cyan]/vault list[/cyan] | [cyan]/vault set <K> <V>[/cyan]"),
-                ("/sandbox",     "AST Code Safety Analyzer & Execution Guardrails",      "[cyan]/sandbox status[/cyan] | [cyan]/sandbox toggle[/cyan]"),
-            ]),
-            ("🚪  Session Management", [
                 ("/help",        "Display this categorized command reference",          "Type [cyan]/help[/cyan]"),
                 ("exit / quit",  "Terminate active KURO session",                       "Type [cyan]exit[/cyan] or [cyan]quit[/cyan]"),
             ]),
@@ -610,7 +605,7 @@ class CLIAdapter:
 
         self.console.print()
         self.console.print(
-            Rule("[bold cyan]KURO 2.0  Categorized Command Reference[/bold cyan]", style="cyan")
+            Rule("[bold cyan]KURO 2.0  Command Reference (Tab Menu)[/bold cyan]", style="cyan")
         )
         self.console.print()
 
@@ -637,10 +632,12 @@ class CLIAdapter:
         self.console.print(
             Panel(
                 "[dim]💡 Shortcuts & Tips:\n"
-                "• [bold]Tab Completion:[/bold] Press [bold]Tab[/bold] to autocomplete slash commands and directory paths.\n"
+                "• [bold]Tab Completion:[/bold] Press [bold]Tab[/bold] to autocomplete slash commands, installed skills (e.g. /skill-name), and paths.\n"
+                "• [bold]Direct Skill Execution:[/bold] Type [bold]/<skill-name> [prompt][/bold] to execute any installed procedural skill with LLM guidance.\n"
+                "• [bold]KuroHub Store:[/bold] Use [bold]/hub[/bold] or [bold]/store[/bold] to install tools (.py file) or plugins & skills (folders).\n"
+                "• [bold]Autonomous Tools:[/bold] File operations, search, browsing, planning, and coding are handled autonomously by Kuro.\n"
                 "• [bold]Command History:[/bold] Press [bold]Up / Down arrows[/bold] to navigate previous commands.\n"
-                "• [bold]Clear Terminal Screen:[/bold] Press [bold]Ctrl+L[/bold] to clear the view without losing conversation memory.\n"
-                "• [bold]Self-Awareness:[/bold] KURO inspects its own tools dynamically. Ask [bold]'What tools do you have?'[/bold] anytime.[/dim]",
+                "• [bold]Clear Terminal Screen:[/bold] Press [bold]Ctrl+L[/bold] to clear the view without losing conversation memory.[/dim]",
                 title="Interactive CLI Tips",
                 border_style="bright_black",
                 padding=(0, 2),
@@ -772,7 +769,7 @@ class CLIAdapter:
         cmd = parts[0].lower()
 
         # ── /help ────────────────────────────────────────────────────────────
-        if cmd in "/help":
+        if cmd in ("/help", "/h", "help", "?"):
             self.display_help()
 
         # ── /status ──────────────────────────────────────────────────────────
@@ -1906,7 +1903,7 @@ class CLIAdapter:
 
             if subcmd in ("list", "all"):
                 filter_t = parts[2].lower() if len(parts) > 2 else None
-                items = store_manager.list_catalog(filter_t)
+                items = store_manager.list_kurohub(filter_t)
                 table = Table(
                     title="🧩 Kuro Capability Store — Plug-and-Play Puzzle Pieces",
                     border_style="cyan",
@@ -2011,7 +2008,7 @@ class CLIAdapter:
                     if res.get("hint"):
                         self.console.print(Panel(
                             f"[yellow]{res.get('hint')}[/]\n\n"
-                            f"[dim]Catalog URL: {res.get('url')}[/dim]",
+                            f"[dim]KuroHub URL: {res.get('url')}[/dim]",
                             title="ℹ️ Hub Setup Info",
                             border_style="yellow",
                         ))
@@ -2019,8 +2016,79 @@ class CLIAdapter:
             else:
                 self.console.print("[yellow]  Usage: /store <list|search <q>|install <name|url>|remove <name>|info <name>|update [url]>[/]")
 
-        # ── unknown ───────────────────────────────────────────────────────────
+        # ── dynamic skill execution: /<skill-name> [prompt] ────────────────────
         else:
+            # Check if this matches an installed skill
+            clean_cmd = cmd.lstrip("/")
+            slug_candidates = [
+                clean_cmd,
+                clean_cmd.replace("-", "_"),
+                clean_cmd.replace("_", "-"),
+            ]
+            
+            matched_skill = None
+            try:
+                from kurocode.brain.kuro_hub import get_skills_kurohub
+                skills_cat = get_skills_kurohub()
+                for c in slug_candidates:
+                    if c in skills_cat:
+                        matched_skill = skills_cat[c]
+                        break
+            except Exception:
+                pass
+
+            if not matched_skill:
+                try:
+                    from kurocode.tools.self_improve import list_learned_skills
+                    for s in list_learned_skills():
+                        if s.get("slug") in slug_candidates or s.get("name") in slug_candidates:
+                            matched_skill = s
+                            break
+                except Exception:
+                    pass
+
+            if matched_skill:
+                # User invoked /<skill-name> [prompt]
+                user_prompt = " ".join(parts[1:]).strip() if len(parts) > 1 else ""
+                skill_name = matched_skill.get("name", clean_cmd)
+                skill_desc = matched_skill.get("description", "")
+                skill_folder = matched_skill.get("folder", f"skills/{clean_cmd}")
+                
+                # Read skill README.md or skill.json
+                skill_content = ""
+                from kurocode.core.paths import SKILLS_DIR, USER_DATA_DIR
+                possible_paths = [
+                    SKILLS_DIR / clean_cmd.replace("-", "_") / "README.md",
+                    SKILLS_DIR / clean_cmd.replace("-", "_") / "SKILL.md",
+                    SKILLS_DIR / f"{clean_cmd.replace('-', '_')}.md",
+                    USER_DATA_DIR / skill_folder / "README.md",
+                ]
+                for p in possible_paths:
+                    if p.exists():
+                        try:
+                            skill_content = p.read_text(encoding="utf-8")
+                            break
+                        except Exception:
+                            pass
+
+                if not skill_content:
+                    skill_content = f"# Skill: {skill_name}\n{skill_desc}"
+
+                self.console.print(f"[bold cyan]  Executing skill:[/] [bold green]{skill_name}[/]")
+                if user_prompt:
+                    self.console.print(f"[dim]  User Prompt:[/] {user_prompt}")
+
+                # Construct composite instruction for the LLM agent
+                composed_prompt = (
+                    f"Follow the procedural skill instructions below to accomplish the task.\n\n"
+                    f"--- SKILL INSTRUCTIONS ({skill_name}) ---\n"
+                    f"{skill_content}\n"
+                    f"--- END SKILL INSTRUCTIONS ---\n\n"
+                    f"TASK / USER PROMPT: {user_prompt if user_prompt else 'Execute this skill routine.'}"
+                )
+                # Return False so run_interactive dispatches composed_prompt to the agent!
+                return False, composed_prompt
+
             self.console.print(f"[yellow]  Unknown command '{cmd}'. Type /help.[/]")
 
         return True, user_input
@@ -2116,16 +2184,10 @@ class CLIAdapter:
                 if user_input.startswith("/"):
                     try:
                         should_continue, user_input = self._handle_slash_command(user_input, agent)
-                        if should_continue and user_input == user_input:
-                            # Most slash commands return True to skip agent dispatch
-                            # UNLESS /listen succeeded and returned new speech text
-                            parts = user_input.split()
-                            if parts and parts[0].lower() in ("/listen", "/talk"):
-                                # The method returned speech text as new user_input
-                                # Fall through to agent dispatch below
-                                pass
-                            else:
-                                continue
+                        if should_continue:
+                            continue
+                        # If should_continue is False (e.g. /skill-name execution or /listen speech),
+                        # fall through directly to autonomous agent dispatch below with the new user_input
                     except Exception as exc:
                         self.console.print(f"[bold red]  Command Error:[/] {exc}")
                         continue

@@ -115,7 +115,7 @@ class KuroAgent:
         registry.register_function("store_search", "Search Kuro Store for tools, plugins, skills, or integrations", lambda query="": {"results": [i.to_dict() for i in store_manager.search(query)]}, RiskLevel.SAFE)
         registry.register_function("store_install", "Install a puzzle-piece capability from Kuro Store", lambda item="": store_manager.install(item), RiskLevel.CONFIRM)
         registry.register_function("store_remove", "Remove a puzzle-piece capability", lambda item="": store_manager.remove(item), RiskLevel.CONFIRM)
-        registry.register_function("store_list", "List available puzzle-piece capabilities in Kuro Store", lambda filter_type=None: {"catalog": [i.to_dict() for i in store_manager.list_catalog(filter_type)]}, RiskLevel.SAFE)
+        registry.register_function("store_list", "List available puzzle-piece capabilities in Kuro Store", lambda filter_type=None: {"kurohub": [i.to_dict() for i in store_manager.list_kurohub(filter_type)]}, RiskLevel.SAFE)
         registry.register_function("store_publish", "Publish custom tool, plugin, skill, or integration to Kuro Store", lambda name="", item_type="tool", description="", payload={}: store_manager.publish(name, item_type, description, payload), RiskLevel.CONFIRM)
         registry.register_function("store_update", "Synchronize capabilities with remote community hub (kuroLabs-ai/hub)", lambda remote_url=None: store_manager.update_from_remote(remote_url), RiskLevel.CONFIRM)
         registry.register_function("create_plugin", "Create and package a full modular plugin for yourself", lambda name="", description="", code="": store_manager.publish(name, "plugin", description, {"manifest": {"name": name, "version": "1.0.0", "description": description, "entrypoint": "main.py"}, "code": code}) and store_manager.install(name), RiskLevel.CONFIRM)
@@ -126,8 +126,15 @@ class KuroAgent:
         personality_prompt = personality.get_system_personality_prompt()
         sys_info = get_system_info()
         repo_tree = get_repo_tree(str(APP_DIR), max_depth=2)
-        learned = list_learned_skills()
-        learned_str = "\n".join([f"- {s.get('name', 'unnamed')}: {s.get('preview', s.get('description', ''))[:100]}" for s in learned]) if learned else "None yet."
+        # Load capability kurohub for tools, plugins, and integrations (skills are kept private for explicit invocation)
+        from kurocode.brain.kuro_hub import get_tools_kurohub, get_plugins_kurohub, get_integrations_kurohub
+        tools_cat = get_tools_kurohub()
+        plugins_cat = get_plugins_kurohub()
+        integ_cat = get_integrations_kurohub()
+
+        tools_summary = ", ".join(list(tools_cat.keys())) if tools_cat else "Standard built-ins"
+        plugins_summary = ", ".join([f"{k} (v{v.get('version', '1.0.0')})" for k, v in plugins_cat.items()]) if plugins_cat else "None"
+        integ_summary = ", ".join([f"{k} ({'connected' if v.get('connected') else 'ready'})" for k, v in integ_cat.items()]) if integ_cat else "None"
 
         context = (
             f"{personality_prompt}\n\n"
@@ -149,6 +156,10 @@ class KuroAgent:
             f"access controls, or user consent; destructive, security-sensitive, external, or irreversible actions require the configured approval.\n"
             f"You can run shell commands and Python, edit files with diffs, search/fetch web content, use browser automation,\n"
             f"analyze images, inspect system telemetry/processes, create plans and skills, manage integrations, and inspect the SQLite database.\n\n"
+            f"[ACTIVE CAPABILITY REGISTRIES]\n"
+            f"Available Registered Tools (tools.json): {tools_summary}\n"
+            f"Active Installed Plugins (plugins.json): {plugins_summary}\n"
+            f"Connected Integrations (integrations.json): {integ_summary}\n\n"
             f"[SYSTEM ENVIRONMENT]\n"
             f"OS: {sys_info['os']} ({sys_info['os_release']})\n"
             f"Python: {sys_info['python_version']}\n"
@@ -156,8 +167,6 @@ class KuroAgent:
             f"User: {sys_info['user']}\n"
             f"\n[REPOSITORY TREE PREVIEW]\n"
             f"```\n{repo_tree}\n```\n"
-            f"\n[KURO LEARNED SKILLS]\n"
-            f"{learned_str}\n"
             f"\n[AUTONOMOUS TOOL INSTRUCTIONS]\n"
             f"When you need to take action, output a single JSON action block enclosed in triple backticks.\n\n"
             "Available Action Schemas:\n"
@@ -454,7 +463,7 @@ class KuroAgent:
 
             elif action == "store_list":
                 filter_t = tool_data.get("filter_type")
-                return {"catalog": [i.to_dict() for i in store_manager.list_catalog(filter_t)]}
+                return {"kurohub": [i.to_dict() for i in store_manager.list_kurohub(filter_t)]}
 
             elif action == "store_publish":
                 p_name = tool_data.get("name", "")

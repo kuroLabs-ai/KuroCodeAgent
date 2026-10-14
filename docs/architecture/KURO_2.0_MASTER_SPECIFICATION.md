@@ -49,7 +49,7 @@
     - Sandboxed Skill Synthesis & Testing (`kurocode.evolution.generator` & `tester`)
     - Evolution Ledger (`kurocode.evolution.versioning`)
 11. [Extensibility: Store, Plugins & Integrations](#11-extensibility-store-plugins--integrations)
-    - Capability Marketplace (`kurocode.store.manager` & `catalog`)
+    - Capability Marketplace & KuroHub (`kurocode.store.manager` & `kuro_hub`)
     - Dynamic Tool Generator (`kurocode.tools.generator`)
     - Plugin System & Hot-Loading (`kurocode.plugins.manager`)
     - External Service Connectors (`kurocode.integrations`)
@@ -164,49 +164,34 @@ The presentation layer is implemented in [`src/kurocode/adapters/cli.py`](file:/
 
 ---
 
-### 3.3 Complete Slash Command (`/`) & Shell Order Reference
+### 3.3 Streamlined Slash Command (`/`) & Tab Menu Reference
+
+KURO 2.0 maintains a lean, focused command set in the Tab autocomplete menu (`COMMAND_LIST`). All other domain capabilities (web search, browser automation, vision, file operations, planning, code execution, and self-healing) are orchestrated autonomously by the ReAct loop:
 
 | Category | Command | Arguments | Behavior & Execution Flow |
 | :--- | :--- | :--- | :--- |
 | **Bypass** | `!<cmd>` | `<shell_command>` | **Direct Local Shell**: Bypasses LLM completely; executes command in local OS subprocess; renders stdout in green and stderr in red panels. |
 | **Core** | `/status` | _none_ | Renders status banner: active provider, model, loaded keys, Safe Mode, Git checkpoint status. |
+| **Core** | `/system` | _none_ | Displays PC hardware telemetry: OS version, logical CPU count, RAM utilization, and primary storage space. |
+| **Core** | `/top` | `[limit]` | Lists running OS processes ordered by memory footprint. |
 | **Core** | `/safe` | `status` \| `on` \| `off` \| `toggle` \| `allow <tool>` \| `clear` | **Permission Gate Control**: Toggles Safe Mode. `/safe on` requires interactive confirmation for destructive tools; `/safe allow <tool>` whitelists a tool. |
 | **Core** | `/pool` | _none_ | Displays status of all provider key pools (total keys, active keys, cooling keys under HTTP 429). |
-| **Core** | `/models` | _none_ | Displays the priority model fallback chain for the active provider. |
+| **Core** | `/models` | `[provider]` | Displays the priority model fallback chain for the active (or specified) provider. |
 | **Core** | `/key` | `[provider] <KEY>` | Adds API key to provider pool and commits it into encrypted vault and `.env`. |
-| **Core** | `/undo` | _none_ | Reverts the last automated file edit via `git checkout . && git clean -fd`. |
-| **Perception** | `/system` | _none_ | Displays PC telemetry: OS version, logical CPU count, RAM usage, and primary storage space. |
-| **Perception** | `/top` | `[limit]` | Lists running OS processes ordered by memory footprint. |
-| **Perception** | `/screen` | _none_ | Takes a screenshot of the primary display via PIL or Windows PowerShell GDI. |
-| **Perception** | `/open` | `<target>` | Launches desktop application or opens path/URL via default OS handler. |
-| **Perception** | `/dir` | `[path]` | Lists directory contents, file types, and sizes with tab autocomplete. |
-| **Perception** | `/project` | _none_ | Scans current directory and prints tech stack profile, entrypoints, and test commands. |
-| **Perception** | `/notes` | `<file.md> <content>` | Writes structured markdown note into `brain/notes/`. |
-| **Perception** | `/sql` | `<query>` | Executes raw SQL query against SQLite database (`brain/kuro.db`). |
-| **Perception** | `/search` | `<query>` | Performs live web search via DuckDuckGo and Wikipedia scrapers. |
-| **Perception** | `/see` | `<path> [prompt]` | Loads image, base64 encodes it, and sends it to multimodal vision LLM. |
-| **Perception** | `/browse` | `<url>` | Headless browser: fetches URL, strips HTML noise, and extracts text and links. |
-| **Perception** | `/notify` | `test` \| `diagnose` \| `config` \| `<msg>` | Dispatches alerts to Telegram or Discord with priority tiers, speech, or image attachments. |
+| **Core** | `/undo` | _none_ | Reverts the last automated file edit via Git stash checkpoint. |
+| **KuroHub** | `/hub` | `list` \| `search <q>` \| `install <name>` \| `remove <name>` \| `info <name>` \| `update` | Primary KuroHub manager: search and install modular tools (as `.py`), plugins (as folders), skills (as folders), and integrations. |
+| **KuroHub** | `/store` | `list` \| `search <q>` \| `install <name>` \| `remove <name>` \| `info <name>` \| `update` | Alias for `/hub`. |
+| **Skills** | `/skills` | _none_ | Lists all installed procedural skills in `skills.json` and `skills/`. |
+| **Skills** | `/<skill>` | `[prompt / parameters]` | **Direct Skill Invocation**: Executes an installed procedural skill routine with LLM guidance and custom prompt arguments. |
+| **Plugins** | `/plugin` | `list` \| `install <path_or_git>` \| `remove <name>` | Manages modular plugin packages installed in `plugins/`. |
+| **Integrations** | `/integrations` | `[connect <service> <token>]` \| `[disconnect <service>]` | Lists and manages external service connectors (GitHub, Telegram, Discord, Drive). |
+| **Security** | `/vault` | `status` \| `list` \| `set <K> <V>` \| `get <K>` \| `delete <K>` \| `lock` \| `unlock` | Manages DPAPI / AES-256 encrypted credential vault. |
 | **Memory** | `/memory` | _none_ | Displays recent episodic conversation memories from SQLite. |
 | **Memory** | `/clear` | _none_ | Wipes active conversation working memory. |
-| **Memory** | `/plan` | `[goal]` | Decomposes goal into ordered multi-step execution plan table. |
-| **Memory** | `/tasks` | _none_ | Shows task lifecycle history (`PENDING` $\to$ `EXECUTING` $\to$ `COMPLETED`). |
-| **Memory** | `/metrics` | _none_ | Renders analytics table: duration, tool call count, token usage, and costs. |
-| **Security** | `/vault` | `status` \| `list` \| `set` \| `get` \| `delete` \| `migrate` \| `lock` \| `unlock` | Manages DPAPI / AES-256 encrypted credential vault. `/vault migrate` pulls secrets from `.env`. |
-| **Security** | `/sandbox` | `status` \| `on` \| `off` \| `toggle` \| `clean` \| `check <code>` | Manages AST execution guardrails; checks Python scripts for banned imports and destructive calls. |
-| **Extensibility** | `/store` | `list` \| `search` \| `install` \| `remove` \| `info` \| `update` | Puzzle Store manager: search and install modular tools, plugins, skills, and integrations. |
-| **Extensibility** | `/plugin` | `list` \| `install` \| `remove` | Manages external plugins from local paths or Git repositories. |
-| **Extensibility** | `/skill` | `list` \| `install` \| `delete` | Manages procedural skill files from `skills/`. |
-| **Extensibility** | `/tool` | `list` \| `create <name> <code>` | Dynamically compiles, AST-validates, and hot-loads custom Python tools. |
-| **Extensibility** | `/learn` | `<name> <steps>` | Teaches KURO a new procedural workflow and saves it to learned skills. |
-| **Extensibility** | `/skills` | _none_ | Lists all self-learned procedural skills. |
-| **Extensibility** | `/integrations` | _none_ | Lists connection status for Telegram, Discord, GitHub, Drive, and GitLab. |
-| **Extensibility** | `/connect` | `<service> <token> [user]` | Connects service token and saves it in the encrypted vault. |
-| **Extensibility** | `/disconnect` | `<service>` | Revokes active service connection. |
-| **Evolution** | `/heal` | `status` \| `repair <tool> [err]` | Inspects Self-Healing engine; triggers automated diagnosis, `pip install`, or syntax rollback. |
-| **Evolution** | `/evolve` | `propose` \| `history` | Runs performance bottleneck analysis, proposes capability additions, and inspects evolution ledger. |
 | **Session** | `/help` | _none_ | Displays categorized interactive command reference table. |
 | **Session** | `exit` / `quit` | _none_ | Terminates session, flushes history to `.kuro_history`. |
+
+> **Autonomous Tool Invocation:** Commands for web searching, browsing, screenshots, SQLite queries, planning, and self-healing are not exposed as slash commands — Kuro invokes them autonomously as internal tool calls during conversation.
 
 ---
 
@@ -509,20 +494,25 @@ KURO improves its own capabilities over time through a structured cycle:
 
 ## 11. Extensibility: Store, Plugins & Integrations
 
-### 11.1 The Puzzle Store & Community Hub (`kurocode.store.manager` & `kuroLabs-ai/hub`)
-KURO implements a decentralized, catalog-driven puzzle-piece store architecture. Rather than bloating the core runtime with domain-specific capabilities, tools, plugins, and procedural skills are cataloged in and retrieved from the official **KuroLabs Capability Hub** at [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
+### 11.1 KuroHub & Community Hub (`kurocode.store.manager`, `kuro_hub` & `kuroLabs-ai/hub`)
+KURO implements a decentralized, puzzle-piece architecture. Rather than bloating the core runtime with domain-specific capabilities, tools, plugins, and procedural skills are cataloged in and retrieved from the official **KuroLabs Capability Hub** at [`https://github.com/kuroLabs-ai/hub`](https://github.com/kuroLabs-ai/hub).
 
-* **Master Catalog Registry (`catalog.json`)**: Hosted on GitHub `main` branch (`https://raw.githubusercontent.com/kuroLabs-ai/hub/main/catalog.json`), indexing all verified capabilities (`tool`, `plugin`, `skill`, `integration`) with entrypoints, risk ratings, and dependencies.
-* **On-Demand Synchronization (`/store update`)**: Queries the remote hub endpoint, parses the remote catalog payload, and merges community capabilities into the local store index at `%APPDATA%\Kuro\store_catalog.json`.
-* **Hot-Loading & Assembly (`/store install <name>`)**: Downloads raw source files directly from GitHub (`tools/<name>.py`, `plugins/<name>/`, `skills/<name>/SKILL.md`), validates the Python AST against the sandbox guard, and hot-registers entrypoints into `PluginRegistry` without restarting the process.
-* **Contributing & Publishing**: Developers can publish custom capabilities using `/store publish <name> <type> <desc>` or submit pull requests directly to `kuroLabs-ai/hub`.
+* **Master KuroHub Registry (`kuro-hub.json`)**: Hosted on GitHub `main` branch (`https://raw.githubusercontent.com/kuroLabs-ai/hub/main/kuro-hub.json`), indexing verified capabilities (`tool`, `plugin`, `skill`, `integration`) with entrypoints, risk ratings, and dependencies.
+* **On-Demand Synchronization (`/hub update` or `/store update`)**: Queries the remote hub endpoint, parses the remote KuroHub payload, and merges community capabilities into the local store index at `%APPDATA%\Kuro\store_kuro-hub.json`.
+* **Clean Capability Placement**: 
+  - **Tools**: Installed as standalone `.py` scripts directly in `tools/` and indexed in `src/kurocode/brain/tools.json`.
+  - **Plugins**: Installed as complete folder packages into `plugins/` and indexed in `src/kurocode/brain/plugins.json`.
+  - **Skills**: Installed as complete procedural directories into `skills/` and indexed in `src/kurocode/brain/skills.json`.
+  - **Integrations**: Installed into `integrations/` and indexed in `src/kurocode/brain/integrations.json`.
+* **Hot-Loading & Assembly (`/hub install <name>`)**: Validates the Python AST against the sandbox guard and hot-registers entrypoints into `PluginRegistry` without restarting the process.
+* **Contributing & Publishing**: Developers can publish custom capabilities using `/hub publish <name> <type> <desc>` or submit pull requests directly to `kuroLabs-ai/hub`.
 
 ### 11.2 Dynamic Tool Generator (`kurocode.tools.generator`)
 Allows the agent to write its own tools at runtime:
 1. Inspects proposed Python code with the AST Sandbox Guard.
 2. Compiles code in an isolated module scope.
 3. Registers the entrypoint function into `PluginRegistry`.
-4. Persists the tool to `plugins/dynamic_<name>/tool.py`.
+4. Persists the tool to `tools/<name>.py` and records it in `src/kurocode/brain/tools.json`.
 
 ### 11.3 External Integrations (`kurocode.integrations`)
 Modular connectors inherit from `BaseIntegration` to provide standard APIs:

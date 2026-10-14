@@ -51,7 +51,7 @@ def clean():
             print(f"  [!] Failed to remove .kuro_history: {e}")
 
     # 4. Remove Evolution and Backup files
-    for f in [ROOT_DIR / "evolution_history.json", ROOT_DIR / "store_catalog.json"]:
+    for f in [ROOT_DIR / "evolution_history.json", ROOT_DIR / "store_kuro-hub.json"]:
         if f.exists():
             try:
                 f.unlink()

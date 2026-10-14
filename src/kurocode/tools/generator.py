@@ -9,7 +9,7 @@ import types
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
-from kurocode.core.paths import PLUGINS_DIR
+from kurocode.core.paths import PLUGINS_DIR, CUSTOM_TOOLS_DIR
 from kurocode.core.permissions import RiskLevel
 from kurocode.core.plugin_registry import registry
 from kurocode.core.sandbox import SandboxGuard
@@ -78,14 +78,25 @@ class DynamicToolGenerator:
             risk_level=risk_level,
         )
 
-        # 4. Optionally persist to user plugins directory
+        # 4. Optionally persist to user tools directory (single file)
         saved_path = None
         if persist:
-            tool_dir = PLUGINS_DIR / f"dynamic_{name}"
-            tool_dir.mkdir(parents=True, exist_ok=True)
-            tool_file = tool_dir / "tool.py"
+            CUSTOM_TOOLS_DIR.mkdir(parents=True, exist_ok=True)
+            tool_file = CUSTOM_TOOLS_DIR / f"{name}.py"
             tool_file.write_text(code_body, encoding="utf-8")
-            saved_path = str(tool_file)
+            saved_path = f"tools/{name}.py"
+
+        # Sync into central tools.json catalog
+        try:
+            from kurocode.brain.kuro_hub import register_tool_in_json
+            register_tool_in_json(
+                name=name,
+                description=description,
+                file_path=saved_path or f"tools/{name}.py",
+                risk_level=risk_level.value,
+            )
+        except Exception:
+            pass
 
         return {
             "success": True,
@@ -96,20 +107,35 @@ class DynamicToolGenerator:
         }
 
     def list_generated_tools(self) -> list[Dict[str, Any]]:
-        """Lists dynamically generated tools stored in PLUGINS_DIR."""
+        """Lists custom tools stored in CUSTOM_TOOLS_DIR (and legacy PLUGINS_DIR)."""
         results = []
-        if not PLUGINS_DIR.exists():
-            return results
-        for d in PLUGINS_DIR.iterdir():
-            if d.is_dir() and d.name.startswith("dynamic_"):
-                tool_py = d / "tool.py"
-                if tool_py.exists():
-                    tname = d.name.replace("dynamic_", "")
+        seen = set()
+
+        # 1. New custom tools directory (tools/*.py)
+        if CUSTOM_TOOLS_DIR.exists():
+            for f in CUSTOM_TOOLS_DIR.glob("*.py"):
+                if not f.name.startswith("__"):
+                    tname = f.stem
+                    seen.add(tname)
                     results.append({
                         "name": tname,
-                        "path": str(tool_py),
-                        "description": f"Dynamic tool {tname}",
+                        "path": str(f),
+                        "description": f"Tool {tname}",
                     })
+
+        # 2. Legacy fallback (plugins/dynamic_*)
+        if PLUGINS_DIR.exists():
+            for d in PLUGINS_DIR.iterdir():
+                if d.is_dir() and d.name.startswith("dynamic_"):
+                    tool_py = d / "tool.py"
+                    if tool_py.exists():
+                        tname = d.name.replace("dynamic_", "")
+                        if tname not in seen:
+                            results.append({
+                                "name": tname,
+                                "path": str(tool_py),
+                                "description": f"Dynamic tool {tname}",
+                            })
         return results
 
 

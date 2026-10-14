@@ -41,7 +41,21 @@ class PluginManager:
         res = self.installer.install(plugin_name, source_dir, self.plugins_dir)
         if not res.get("success"):
             return res
-        return self.loader.load_from_dir(self.plugins_dir / plugin_name)
+        load_res = self.loader.load_from_dir(self.plugins_dir / plugin_name)
+        if load_res.get("success"):
+            manifest = load_res.get("manifest", {})
+            try:
+                from kurocode.brain.kuro_hub import register_plugin_in_json
+                register_plugin_in_json(
+                    name=plugin_name,
+                    description=manifest.get("description", f"Plugin {plugin_name}"),
+                    folder=f"plugins/{plugin_name}",
+                    version=manifest.get("version", "1.0.0"),
+                    entrypoint=manifest.get("entrypoint", "plugin.py")
+                )
+            except Exception:
+                pass
+        return load_res
 
     def install_from_source(self, source: str, name: Optional[str] = None) -> Dict[str, Any]:
         res = self.installer.install_from_source(source, self.plugins_dir, plugin_name=name)
@@ -50,11 +64,25 @@ class PluginManager:
         installed_name = res.get("name")
         if installed_name:
             load_res = self.loader.load_from_dir(self.plugins_dir / installed_name)
+            if load_res.get("success"):
+                manifest = load_res.get("manifest", {})
+                try:
+                    from kurocode.brain.kuro_hub import register_plugin_in_json
+                    register_plugin_in_json(
+                        name=installed_name,
+                        description=manifest.get("description", f"Plugin {installed_name}"),
+                        folder=f"plugins/{installed_name}",
+                        version=manifest.get("version", "1.0.0"),
+                        entrypoint=manifest.get("entrypoint", "plugin.py")
+                    )
+                except Exception:
+                    pass
             return {**res, "load_result": load_res}
         return res
 
     def uninstall(self, plugin_name: str) -> bool:
         plugin_dir = self.plugins_dir / plugin_name
+        actual_name = plugin_name
         if not plugin_dir.exists():
             # Check by manifest name in subdirectories
             for d in self.plugins_dir.iterdir():
@@ -63,6 +91,7 @@ class PluginManager:
                         m = json.loads((d / "plugin.json").read_text(encoding="utf-8"))
                         if m.get("name") == plugin_name:
                             plugin_dir = d
+                            actual_name = m.get("name", d.name)
                             break
                     except Exception:
                         pass
@@ -71,6 +100,13 @@ class PluginManager:
         import shutil
         shutil.rmtree(plugin_dir, ignore_errors=True)
         self.plugins.pop(plugin_name, None)
+        self.plugins.pop(actual_name, None)
+        try:
+            from kurocode.brain.kuro_hub import unregister_plugin_from_json
+            unregister_plugin_from_json(plugin_name)
+            unregister_plugin_from_json(actual_name)
+        except Exception:
+            pass
         return True
 
     def uninstall_plugin(self, plugin_name: str) -> Dict[str, Any]:

@@ -8,5 +8,6 @@
     "3. Make minimal implementation change to achieve green test status.",
     "4. Refactor code for readability, type safety, and PEP standards.",
     "5. Re-run complete test suite to ensure zero regressions."
-  ]
+  ],
+  "dir_path": "skills/tdd_refactoring"
 }
