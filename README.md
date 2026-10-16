@@ -9,6 +9,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![Architecture](https://img.shields.io/badge/architecture-Level%202%20ReAct%20Agent-purple.svg?style=for-the-badge)](docs/architecture/KURO_2.0_MASTER_SPECIFICATION.md)
 [![Security](https://img.shields.io/badge/security-Windows%20DPAPI%20%2B%20AST%20Guard-red.svg?style=for-the-badge)](src/kurocode/security/)
+[![PyPI](https://img.shields.io/pypi/v/kurocode?style=for-the-badge&logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/kurocode/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/kurocode?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/kurocode/)
 
 <br/>
 
@@ -18,7 +20,7 @@
 **KURO** is an autonomous desktop terminal agent designed to think, plan, execute, verify, heal, and evolve directly on your machine.
 Unlike passive AI chat widgets, KURO has hands: it compiles code, executes shell commands, inspects live PC telemetry, captures screenshots, automates browsers, heals its own errors, and installs plug-and-play tools on the fly.
 
-[Key Features](#-key-features) • [Architecture](#-system-architecture) • [Quickstart](#-quickstart--installation) • [CLI Orders & Slash Commands](#-cli-orders--slash-commands) • [Security & Vault](#-security-sandboxing--vault) • [Self-Healing & Evolution](#-self-healing--evolution) • [Store & Plugins](#-puzzle-store--modular-extensibility)
+[Key Features](#-key-features) • [Architecture](#-system-architecture) • [Quickstart](#-quickstart--installation) • [CLI Orders & Slash Commands](#-cli-orders--slash-commands) • [Security & Vault](#-security-sandboxing--vault) • [Self-Healing & Evolution](#-self-healing--evolution) • [KuroHub](#-kurohub--modular-capability-architecture)
 
 </div>
 
@@ -135,44 +137,72 @@ graph TD
 
 ## ⚡ Quickstart & Installation
 
-### 1. Prerequisites
+### Prerequisites
 * **Python**: 3.10, 3.11, 3.12, or 3.13
 * **Git**: Installed and available in PATH (for automatic checkpointing)
-* **OS**: Windows (optimal, with full DPAPI vault support), Linux, or macOS
+* **OS**: Windows (optimal, full DPAPI vault), Linux, or macOS
 
-### 2. Clone & Setup Virtual Environment
+---
+
+### ✅ Option 1 — Install from PyPI *(Recommended)*
+
+```bash
+pip install kurocode
+```
+
+That's it. After install, run:
+
+```bash
+kuro
+```
+
+> **PyPI releases** are published automatically on every tagged GitHub Release using OIDC Trusted Publishing — no manual token management required.
+
+---
+
+### 🛠️ Option 2 — Install from Source *(for contributors & developers)*
+
 ```bash
 # Clone the repository
 git clone https://github.com/kurolabs-ai/KuroCodeAgent.git
-cd KuroAgent
+cd KuroCodeAgent
 
-# Create and activate virtual environment
+# Create and activate a virtual environment
 python -m venv .venv
 
-# On Windows:
+# Windows:
 .venv\Scripts\activate
-# On Linux / macOS:
+# Linux / macOS:
 source .venv/bin/activate
 
-# Upgrade pip & install package in editable development mode
-python -m pip install --upgrade pip setuptools wheel
+# Install in editable mode (changes take effect immediately)
 pip install -e .
 ```
 
-### 3. Configure API Keys
-You can configure API keys in two ways:
+Then launch with:
 
-#### Option A: Interactive In-App Command (Recommended)
-Launch KURO and use the built-in `/key` command to securely store your keys into the encrypted vault:
 ```bash
 kuro
-# Inside KURO:
+```
+
+---
+
+### 🔑 Configure API Keys
+
+You have two options — pick whichever suits your workflow:
+
+#### Option A — Interactive Vault (Recommended)
+Launch KURO and save keys directly into the encrypted vault:
+```bash
+kuro
+# Then inside the KURO terminal:
 /key gemini AIzaSyYourGeminiApiKeyHere
 /key groq gsk_YourGroqApiKeyHere
 ```
+Keys are encrypted with **Windows DPAPI** (or AES-256 on Linux/macOS) and never stored in plaintext.
 
-#### Option B: Environment File (`.env`)
-Create a `.env` file in the project root:
+#### Option B — `.env` File
+Create a `.env` file in your working directory (or project root):
 ```env
 # Primary LLM Providers
 GEMINI_API_KEY=your_gemini_api_key_here
