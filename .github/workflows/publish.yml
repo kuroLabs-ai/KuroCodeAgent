@@ -29,10 +29,45 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build
+          python -m pip install build twine
 
       - name: Build package
         run: python -m build
 
+      - name: Show built artifacts & version
+        run: |
+          ls -la dist/
+          python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              p = tomllib.load(f)['project']
+          print(f\"Package : {p['name']}\")
+          print(f\"Version : {p['version']}\")
+          "
+
+      - name: Fail if version already exists on PyPI
+        run: |
+          python - <<'PY'
+          import tomllib, json, urllib.request, sys
+          with open('pyproject.toml', 'rb') as f:
+              p = tomllib.load(f)['project']
+          name, version = p['name'], p['version']
+          print(f'Checking PyPI for {name}=={version} ...')
+          try:
+              data = json.load(urllib.request.urlopen(f'https://pypi.org/pypi/{name}/json'))
+              if version in data.get('releases', {}):
+                  print(f'ERROR: Version {version} of {name} already exists on PyPI.')
+                  print('Bump the version in pyproject.toml before publishing.')
+                  sys.exit(1)
+          except urllib.error.HTTPError as e:
+              if e.code == 404:
+                  print(f'Package {name} not yet on PyPI — first publish!')
+              else:
+                  raise
+          print(f'OK — {name}=={version} is safe to publish.')
+          PY
+
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
